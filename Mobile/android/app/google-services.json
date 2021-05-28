@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "680066562625",
+    "firebase_url": "https://hunter-s-loop.firebaseio.com",
+    "project_id": "hunter-s-loop",
+    "storage_bucket": "hunter-s-loop.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680066562625:android:51fba4ec3e64eeb065e4c0",
+        "android_client_info": {
+          "package_name": "com.brainyapps.hunters"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "680066562625-e2e026p1cb5lavcq8i6oaj603q5t01ik.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brainyapps.hunters",
+            "certificate_hash": "d3de8b55e47c16c1c906fbb7a7488de5e13053d2"
+          }
+        },
+        {
+          "client_id": "680066562625-4shrbvif12o9vh2b71ecpc1v1thoqk55.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brainyapps.hunters",
+            "certificate_hash": "b2b110cfaf9d8f1b4721f63054c8aec082db8ffe"
+          }
+        },
+        {
+          "client_id": "680066562625-qsppuad0iilcc05an2qe2tql2fqen40d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9tjxo8qcvQgenFqkn5JAJbufSOCjhgQ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "680066562625-qsppuad0iilcc05an2qe2tql2fqen40d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "680066562625-35gmea5i58ahr7jn1o2qhnkslv8rh2sf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.brainyapps.hunters"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

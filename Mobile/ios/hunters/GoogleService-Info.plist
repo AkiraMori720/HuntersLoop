@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>680066562625-35gmea5i58ahr7jn1o2qhnkslv8rh2sf.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.680066562625-35gmea5i58ahr7jn1o2qhnkslv8rh2sf</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDETutlwGKP94LBbVdTSwc2YCtlmUI7XNk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>680066562625</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.brainyapps.hunters</string>
+	<key>PROJECT_ID</key>
+	<string>hunter-s-loop</string>
+	<key>STORAGE_BUCKET</key>
+	<string>hunter-s-loop.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:680066562625:ios:067a7cc66e77c8d265e4c0</string>
+	<key>DATABASE_URL</key>
+	<string>https://hunter-s-loop.firebaseio.com</string>
+</dict>
+</plist>
