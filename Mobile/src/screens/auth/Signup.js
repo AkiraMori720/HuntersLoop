@@ -38,12 +38,12 @@ export default function SignupScreen({ navigation }) {
   })
   const [spinner, setSpinner] = useState(false);
 
-  validateEmail = () => {
-    let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  const validateEmail = () => {
+    const reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return reg.test(email);
   }
 
-  onChangeEmail = (text) => {
+  const onChangeEmail = (text) => {
     setEmail(text);
     if (!text) {
       setEmailValid(false);
@@ -58,7 +58,7 @@ export default function SignupScreen({ navigation }) {
     }
   }
 
-  onChangePwd = (text) => {
+  const onChangePwd = (text) => {
     setPwd(text);
 
     var pwdChkObj = {
@@ -120,7 +120,7 @@ export default function SignupScreen({ navigation }) {
 
   }
 
-  onSignup = async () => {
+  const onSignup = async () => {
     if (!email) {
       Alert.alert('Please enter email');
       return;
@@ -133,10 +133,21 @@ export default function SignupScreen({ navigation }) {
       Alert.alert('Please enter password');
       return;
     }
-    // if (!pwdValidObj.sixCharacters || !pwdValidObj.letter || !pwdValidObj.number || !pwdValidObj.specialCharacter) {
-    //   Alert.alert('Please endter a valid password');
-    //   return;
-    // }
+    if (!pwdValidObj.sixCharacters || !pwdValidObj.letter || !pwdValidObj.number || !pwdValidObj.specialCharacter) {
+      let errorTitle = 'Invalid password.';
+      let errorMessage = '';
+      if(!pwdValidObj.sixCharacters){
+          errorMessage = 'Please input password at least 6 characters long';
+      } else if(!pwdValidObj.letter){
+        errorMessage = 'Password must contain at least a letter';
+      } else if(!pwdValidObj.number){
+        errorMessage = 'Password must contain at least a number';
+      } else if(!pwdValidObj.specialCharacter){
+        errorMessage = 'Password must contain at least a special character';
+      }
+      Alert.alert(errorTitle, errorMessage);
+      return;
+    }
 
     var isConnected = await checkInternet();
     if (!isConnected) {
@@ -171,14 +182,13 @@ export default function SignupScreen({ navigation }) {
             console.log('create user success');
             Alert.alert(
               'Account created!',
-              '',
               [
                 {
                   text: "OK", onPress: () => {
                     setSpinner(false);
                     Constants.user = user;
                     AsyncStorage.setItem('user', JSON.stringify(user));
-                    navigation.navigate('Welcome');
+                    navigation.navigate("Home", { screen: 'BusinessList' });
                   }
                 }
               ],
@@ -193,7 +203,7 @@ export default function SignupScreen({ navigation }) {
         console.log('signup error', err);
         if (err.code === 'auth/email-already-in-use') {
           Alert.alert(
-            'That email address is already in use!',
+            'Email address is already in use!',
             '',
             [
               { text: "OK", onPress: () => setSpinner(false) }
@@ -202,7 +212,7 @@ export default function SignupScreen({ navigation }) {
         }
         if (err.code === 'auth/invalid-email') {
           Alert.alert(
-            'That email address is invalid!',
+            'Email address is invalid!',
             '',
             [
               { text: "OK", onPress: () => setSpinner(false) }

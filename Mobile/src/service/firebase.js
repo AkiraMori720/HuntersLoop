@@ -226,6 +226,7 @@ export const getData = (kind = '') => {
           Object.assign(obj, { id: doc.id });
           data.push(obj);
         })
+        console.log('getData : ' + kind + ' Data: ', data);
         resolve(data);
       })
       .catch(err => {

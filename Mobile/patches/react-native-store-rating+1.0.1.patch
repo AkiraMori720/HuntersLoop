@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-store-rating/dist/Assets/Styles/RateModal.js b/node_modules/react-native-store-rating/dist/Assets/Styles/RateModal.js
+index 88ba0e0..1fc58ad 100644
+--- a/node_modules/react-native-store-rating/dist/Assets/Styles/RateModal.js
++++ b/node_modules/react-native-store-rating/dist/Assets/Styles/RateModal.js
+@@ -30,7 +30,6 @@ exports.RateModalStyles = react_native_1.StyleSheet.create({
+     },
+     buttonContainer: {
+         alignItems: 'center',
+-        alignSelf: 'flex-end',
+         flexDirection: 'row',
+         justifyContent: 'center',
+         marginVertical: 20,
+diff --git a/node_modules/react-native-store-rating/dist/Components/RateModal.js b/node_modules/react-native-store-rating/dist/Components/RateModal.js
+index c7b75d5..b6ffb0e 100644
+--- a/node_modules/react-native-store-rating/dist/Components/RateModal.js
++++ b/node_modules/react-native-store-rating/dist/Components/RateModal.js
+@@ -71,7 +71,6 @@ class RateModal extends react_1.Component {
+             react_1.default.createElement(react_native_1.Text, { style: title }, modalTitle),
+             react_1.default.createElement(react_native_ratings_1.AirbnbRating, { count: totalStarCount, defaultRating: defaultStars, showRating: isVisible, reviews: starLabels, onFinishRating: (e) => this.onStarSelected(e) }),
+             react_1.default.createElement(react_native_1.View, { style: buttonContainer },
+-                react_1.default.createElement(react_native_1.View, { style: { flex: 1 } }),
+                 react_1.default.createElement(Button_1.Button, { text: cancelBtnText, containerStyle: [button, buttonCancel], textStyle: buttonCancelText, onPress: this.onClosed.bind(this) }),
+                 react_1.default.createElement(Button_1.Button, { text: rateBtnText, containerStyle: button, onPress: this.sendRate.bind(this) }))));
+     }

@@ -39,19 +39,19 @@ export default function ServiceListScreen({ navigation, route }) {
   const [reviewModal, setReviewModal] = useState(false);
   const [spinner, setSpinner] = useState(false);
 
-  onRefresh = () => {
+  const onRefresh = () => {
     setRefresh(!refresh);
   }
 
-  onServiceItem = (item) => {
+  const onServiceItem = (item) => {
     navigation.navigate('ServiceDetail', { serviceItem: item })
   }
 
-  toggleReviewModal = () => {
+  const toggleReviewModal = () => {
     setReviewModal(!reviewModal)
   }
 
-  confirmReviewBusiness = async (rating, review) => {
+  const confirmReviewBusiness = async (rating, review) => {
     setReviewModal(!reviewModal);
     setSpinner(true);
 
@@ -112,7 +112,7 @@ export default function ServiceListScreen({ navigation, route }) {
       })
   }
 
-  getDistanceMile = (businessItem) => {
+  const getDistanceMile = (businessItem) => {
     let myLocation = (Constants.location.latitude && Constants.location.latitude) ? Constants.location : Constants.user?.location;
 
     if ((!myLocation?.latitude || !myLocation?.longitude) ||

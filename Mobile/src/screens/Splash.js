@@ -47,7 +47,8 @@ export default function SplashScreen({ navigation }) {
           // getAllData();
         })
         .catch((err) => {
-          console.log('request permission error', err)
+          console.log('request permission error', err);
+          requestLocation();
         })
     }
     else {
@@ -58,11 +59,12 @@ export default function SplashScreen({ navigation }) {
         })
         .catch((err) => {
           console.log('request permission error', err);
+          requestLocation();
         })
     }
   }, [])
 
-  keyboardManager = () => {
+  const keyboardManager = () => {
     if (Platform.OS === 'ios') {
       KeyboardManager.setEnable(true);
       KeyboardManager.setEnableDebugging(false);
@@ -84,7 +86,7 @@ export default function SplashScreen({ navigation }) {
     }
   }
 
-  requestPermissionAndroid = async () => {
+  const requestPermissionAndroid = async () => {
     try {
       const results = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.CAMERA,
@@ -106,7 +108,7 @@ export default function SplashScreen({ navigation }) {
     }
   };
 
-  requestPermissionIOS = () => {
+  const requestPermissionIOS = () => {
     return new Promise((resolve, reject) => {
       requestMultiple([PERMISSIONS.IOS.CAMERA, PERMISSIONS.IOS.PHOTO_LIBRARY]).then(
         (statuses) => {
@@ -120,7 +122,7 @@ export default function SplashScreen({ navigation }) {
     })
   }
 
-  requestLocation = () => {
+  const requestLocation = () => {
     GetLocation.getCurrentPosition({
       enableHighAccuracy: true,
       timeout: 150000,
@@ -155,7 +157,7 @@ export default function SplashScreen({ navigation }) {
     }
   }
 
-  getAllData = async () => {
+  const getAllData = async () => {
     if(checkInternetTimer) clearInterval(checkInternetTimer);
     setSpinner(true);
     await getData('users').then(res => Constants.users = res);
@@ -171,7 +173,7 @@ export default function SplashScreen({ navigation }) {
     goScreen();
   }
 
-  goScreen = () => {
+  const goScreen = () => {
     AsyncStorage.getItem('user')
       .then((user) => {
         // console.log('user', user)

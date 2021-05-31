@@ -15,12 +15,11 @@ import Pricing from '../pages/Admin/Pricing';
 import ChangePwd from '../pages/Admin/ChangePwd';
 
 const publicRoutes = [
-  { path: "/", exact: true, component: Login },  
+  	{ path: "/", exact: true, component: Login },
 	{ path: "/login", component: Login },
 ];
 
 const authProtectedRoutes = [	
-	{ path: "/profile", exact: true, component: Profile },
 	{ path: "/profile/edit", component: ProfileForm},
 	{ path: "/services", exact: true, component: Services },
 	{ path: "/services/add", component: ServiceForm },
@@ -28,10 +27,10 @@ const authProtectedRoutes = [
 	{ path: "/chat", exact: true, component: Messages },
 	{ path: "/socialupdate", component: SocialUpdate },
 	{ path: "/settings", component: Settings },
+	{ path: "/*", exact: true, component: Profile },
 ];
 
 const authProtectedAdminRoutes = [
-	{ path: "/admin/reports", exact: true, component: Reports },
 	{ path: "/admin/reports/detail", component: Reports },
 	{ path: "/admin/users/all", exact: true, component: Users},
 	{ path: "/admin/users/banned", component: Users},
@@ -41,6 +40,7 @@ const authProtectedAdminRoutes = [
 	{ path: "/admin/businessaccounts/requests/detail", component: BusinessAccounts },
 	{ path: "/admin/businessaccounts/view", exact: true, component: BusinessAccounts },
 	{ path: "/admin/changepwd", exact: true, component: ChangePwd },
+	{ path: "/*", exact: true, component: Reports },
 ]
 
 export { publicRoutes, authProtectedRoutes, authProtectedAdminRoutes };

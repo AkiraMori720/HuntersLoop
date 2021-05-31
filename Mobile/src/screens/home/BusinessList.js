@@ -1,73 +1,113 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 import {
-    StyleSheet,
-    View,
-    ScrollView,
+    Alert,
+    BackHandler,
     Image,
-    TouchableOpacity,
-    Dimensions,
-    Platform,
+    ImageBackground,
+    ScrollView,
+    StyleSheet,
     Text,
     TextInput,
-    ImageBackground,
-    Alert,
-    BackHandler
+    TouchableOpacity,
+    View
 } from 'react-native';
 import normalize from 'react-native-normalize';
-import { RFPercentage } from 'react-native-responsive-fontsize';
-
-import { useIsFocused } from '@react-navigation/native';
+import {RFPercentage} from 'react-native-responsive-fontsize';
 
 import EntypoIcon from 'react-native-vector-icons/Entypo';
-EntypoIcon.loadFont();
+import {SliderPicker} from 'react-native-slider-picker';
 
-import { SliderPicker } from 'react-native-slider-picker';
-
-import { Colors, Images, Constants } from '@constants';
+import {Colors, Constants, Images} from '@constants';
 import BusinessItem from '../../components/BusinessItem';
 
-import { getData } from '../../service/firebase';
-import { getDistance } from 'geolib';
+import {getData} from '../../service/firebase';
+import {getDistance} from 'geolib';
 import StarRating from 'react-native-star-rating';
-import { Collapse, CollapseHeader, CollapseBody, AccordionList } from 'accordion-collapse-react-native';
+import {Collapse, CollapseBody, CollapseHeader} from 'accordion-collapse-react-native';
 
-export default function BusinessListScreen({ navigation }) {
-    console.log('render BusinessListScreen');
+EntypoIcon.loadFont();
 
-    const [keyword, setKeyword] = useState('');
-    const [business, setBusiness] = useState(Constants.business.filter(each => each.status === 'approved'));
-    const [services, setServices] = useState(Constants.services);
-    const [refresh, setRefresh] = useState(false);
+export default class BusinessListScreen extends React.Component {
 
-    const [distanceSearch, setDistanceSearch] = useState(false);
-    const [distance, setDistance] = useState(1000);
-
-    const [categorySearch, setCategorySearch] = useState(false);
-    const [categories, setCategories] = useState(Constants.categories);
-    const [activeCategories, setActiveCategories] = useState([]);
-
-    // useEffect(()=>{
-    //   const onBackPress = () => {      
-    //     return true;
-    //   };
-    //   BackHandler.addEventListener(
-    //     'hardwareBackPress', onBackPress
-    //   );
-
-    //   return () => {  
-    //     BackHandler.removeEventListener(
-    //       'hardwareBackPress', onBackPress
-    //     );
-    //   }
-    // })
-
-    if (useIsFocused() && Constants.refreshFlag) {
-        Constants.refreshFlag = false;
-        getBusiness();
+    constructor(props) {
+        super(props);
+        this.state = {
+            keyword: '',
+            business: Constants.business.filter(each => each.status === 'approved'),
+            services: Constants.services,
+            refresh: false,
+            distanceSearch: false,
+            distance: 1000,
+            categorySearch: false,
+            categories: Constants.categories,
+            activeCategories: []
+        };
     }
 
-    async function getBusiness() {
+    componentDidMount() {
+        const { navigation } = this.props;
+        this.unSubscribeFocus = navigation.addListener('focus', () => {
+            this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => { return true; });
+        });
+        this.unSubscribeBlur = navigation.addListener('blur', () => {
+            if(this.backHandler && this.backHandler.remove){
+                this.backHandler.remove();
+                this.backHandler = null;
+            }
+        })
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const { distanceSearch, categorySearch, activeCategories, distance, keyword, refresh } = this.state;
+        if(prevState.distanceSearch !== distanceSearch ||
+            prevState.categorySearch !== categorySearch
+        ){
+            if (distanceSearch && categorySearch) {
+                let filtered = this.getBusinessByCategory();
+                filtered = this.getBusinessByDistance(filtered, distance);
+                filtered = this.getBusinessByKeyword(filtered, keyword);
+                this.setState({ business: filtered });
+            }
+            else if (distanceSearch && !categorySearch) {
+                let filtered = this.getBusinessByDistance(Constants.business.filter(each => each.status === 'approved'), distance);
+                filtered = this.getBusinessByKeyword(filtered, keyword);
+                this.setState({ business: filtered, activeCategories: [] });
+            }
+            else if (!distanceSearch && categorySearch) {
+                let filtered = this.getBusinessByCategory();
+                filtered = this.getBusinessByKeyword(filtered, keyword);
+                this.setState({ business: filtered });
+            }
+            else if (!distanceSearch && !categorySearch) {
+                let filtered = Constants.business.filter(each => each.status === 'approved');
+                this.setState({ business: filtered, activeCategories: [] });
+            }
+        }
+        if(prevState.activeCategories !== activeCategories){
+            let filtered = this.getBusinessByCategory();
+            filtered = this.getBusinessByDistance(filtered, distance);
+            filtered = this.getBusinessByKeyword(filtered, keyword);
+            this.setState({ business: filtered });
+        }
+        if(prevState.refresh !== refresh) {
+            if (Constants.refreshFlag) {
+                Constants.refreshFlag = false;
+                this.getBusiness();
+            }
+        }
+    }
+
+    componentWillUnmount(){
+        if(this.unSubscribeFocus){
+            this.unSubscribeFocus();
+        }
+        if(this.unSubscribeBlur){
+            this.unSubscribeBlur();
+        }
+    }
+
+    getBusiness = async () => {
         await getData('business')
             .then((res) => {
                 if (res) {
@@ -76,60 +116,56 @@ export default function BusinessListScreen({ navigation }) {
             })
     }
 
-    if (useIsFocused() && Constants.refreshFlag) {
-        Constants.refreshFlag = false;
-        getBusiness();
-    }
-
     onBusinessItem = (item) => {
+        const { navigation } = this.props;
         Constants.backRoute = 'Home';
         navigation.navigate('ServiceList', { businessItem: item })
     }
 
     /////////////////////
     onCategorySearch = (category) => {
-        var aCategories = [...activeCategories];
-        var index = aCategories.findIndex(each => each.id == category.id);
+        const { activeCategories } = this.state;
+        let aCategories = [...activeCategories];
+        let index = aCategories.findIndex(each => each.id == category.id);
         if (index == -1) {
             aCategories.push(category)
         }
         else {
             aCategories.splice(index, 1);
         }
-        setActiveCategories(aCategories);
+        this.setState({ activeCategories: aCategories });
     }
 
-    useEffect(() => {
-        var filtered = getBusinessByCategory();
-        filtered = getBusinessByDistance(filtered, distance);
-        filtered = getBusinessByKeyword(filtered, keyword);
-        setBusiness(filtered);
-    }, [activeCategories]);
     getBusinessByCategory = () => {
+        const { activeCategories, categorySearch, services } = this.state;
+
         if (!categorySearch) {
-            var result = Constants.business.filter(each => each.status === 'approved');
-            return result;
+            return Constants.business.filter(each => each.status === 'approved');
         }
 
-        var bids = [];
+        let bids = [];
         services.forEach(each => {
             if (activeCategories?.findIndex(e => e.id == each.cid) > -1) {
                 bids.push(each.bid);
             }
         });
 
-        var filtered = Constants.business.filter(each => bids.includes(each.id) && each.status === 'approved');
+        let filtered = Constants.business.filter(each => bids.includes(each.id) && each.status === 'approved');
         console.log('activeCategories', activeCategories);
         console.log('filtered', filtered.length);
         return filtered;
     }
     ///////////////////
     onDistanceSearch = (distanceValue) => {
-        var filtered = getBusinessByCategory();
-        filtered = getBusinessByDistance(filtered, distanceValue);
-        filtered = getBusinessByKeyword(filtered, keyword);
-        setBusiness(filtered);
-        setDistance(distanceValue);
+        const { keyword } = this.state;
+
+        let filtered = this.getBusinessByCategory();
+        filtered = this.getBusinessByDistance(filtered, distanceValue);
+        filtered = this.getBusinessByKeyword(filtered, keyword);
+        this.setState({
+            business: filtered,
+            distance: distanceValue
+        });
     }
     getDistanceMile = (item) => {
         let myLocation = (Constants.location.latitude && Constants.location.latitude) ? Constants.location : Constants.user?.location;
@@ -140,59 +176,36 @@ export default function BusinessListScreen({ navigation }) {
         }
         else {
             if (!myLocation) return 0;
-            var distance = getDistance(myLocation, item.location);
-            var distanceMile = distance / 1000 / 1.6;
+            let distance = getDistance(myLocation, item.location);
+            let distanceMile = distance / 1000 / 1.6;
             return distanceMile.toFixed(2);
         }
     }
     getBusinessByDistance = (result, distance) => {
+        const { distanceSearch } = this.state;
+
         if (!distanceSearch) return result;
-        var filtered = result.filter(each => getDistanceMile(each) < distance && each.status === 'approved');
-        return filtered;
+        return result.filter(each => this.getDistanceMile(each) < distance && each.status === 'approved');
     }
     ///////////////////
-    function onSearch(text) {
-        var filtered = getBusinessByCategory();
-        filtered = getBusinessByDistance(filtered, distance);
-        filtered = getBusinessByKeyword(filtered, text);
-        setBusiness(filtered);
-        setKeyword(text);
+    onSearch = (text) => {
+        const { distance } = this.state;
+        let filtered = this.getBusinessByCategory();
+        filtered = this.getBusinessByDistance(filtered, distance);
+        filtered = this.getBusinessByKeyword(filtered, text);
+        this.setState({
+            business: filtered,
+            keyword: text
+        });
     }
     getBusinessByKeyword = (result, text) => {
         if (!text) return result;
-        var filtered = result.filter(each => (each.name?.toLowerCase().includes(text.toLowerCase()) || each.address?.toLowerCase().includes(text.toLowerCase())) && each.status === 'approved');
-        return filtered;
-    }
-
-    useEffect(() => {
-        if (distanceSearch && categorySearch) {
-            var filtered = getBusinessByCategory();
-            filtered = getBusinessByDistance(filtered, distance);
-            filtered = getBusinessByKeyword(filtered, keyword);
-            setBusiness(filtered);
-        }
-        else if (distanceSearch && !categorySearch) {
-            filtered = getBusinessByDistance(Constants.business.filter(each => each.status === 'approved'), distance);
-            filtered = getBusinessByKeyword(filtered, keyword);
-            setBusiness(filtered);
-            setActiveCategories([]);
-        }
-        else if (!distanceSearch && categorySearch) {
-            var filtered = getBusinessByCategory();
-            filtered = getBusinessByKeyword(filtered, keyword);
-            setBusiness(filtered);
-        }
-        else if (!distanceSearch && !categorySearch) {
-            setBusiness(Constants.business.filter(each => each.status === 'approved'));
-            setActiveCategories([]);
-        }
-    }, [distanceSearch, categorySearch]);
-
-    onRefresh = () => {
-        setRefresh(!refresh)
+        return result.filter(each => (each.name?.toLowerCase().includes(text.toLowerCase()) || each.address?.toLowerCase().includes(text.toLowerCase())) && each.status === 'approved');
     }
 
     onPressProfile = () => {
+        const { navigation } = this.props;
+
         if (Constants.user) {
             if (Constants.user.role == 'business') {
                 navigation.navigate('BusinessProfile')
@@ -201,11 +214,12 @@ export default function BusinessListScreen({ navigation }) {
             }
         }
         else {
-            showAlert();
+            this.showAlert();
         }
     }
 
-    function showAlert() {
+    showAlert = () => {
+        const { navigation } = this.props;
         Alert.alert('You should login first!', 'Going to login now?',
             [
                 {
@@ -223,25 +237,155 @@ export default function BusinessListScreen({ navigation }) {
         return Constants.services.filter(one => one.bid == Constants.user.bid);
     }
 
-    
-    let myBusiness = null;
-    if (Constants.user && Constants.user.role == 'business') {
-        myBusiness = business.find(one => one.id == Constants.user.bid);
-        // myServices = services.filter(one => one.bid == Constants.user.bid);
-    }
+    render = () => {
+        const { navigation } = this.props;
+        const { business, distanceSearch, categorySearch, distance, categories, activeCategories, refresh, keyword } = this.state;
 
-    if (!myBusiness) { 
+        let myBusiness = null;
+        if (Constants.user && Constants.user.role == 'business') {
+            myBusiness = business.find(one => one.id == Constants.user.bid);
+            // myServices = services.filter(one => one.bid == Constants.user.bid);
+        }
+
+        console.log('business', myBusiness, business, Constants.user);
+
+        if (!myBusiness) {
+            return (
+                <ImageBackground style={styles.container} source={Images.background}>
+                    <View style={styles.header}>
+                        <View style={styles.iconProfileContainer}>
+                            <TouchableOpacity onPress={this.onPressProfile}>
+                                <EntypoIcon name="user" style={styles.headerIcon}/>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.iconMapContainer}>
+                            <TouchableOpacity onPress={() => navigation.navigate('MapView')}>
+                                <EntypoIcon name="map" style={[styles.headerIcon, { fontSize: RFPercentage(3.2) }]}/>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.titleContainer}>
+                            <Text style={styles.titleTxt}>Hunters Loop</Text>
+                        </View>
+                        <View style={styles.iconMessageContainer}>
+                            <TouchableOpacity onPress={() => {
+                                if (Constants.user) {
+                                    navigation.navigate('Message')
+                                }
+                                else {
+                                    this.showAlert();
+                                }
+                            }}>
+                                <EntypoIcon name="message" style={styles.headerIcon}/>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.iconSettingContainer}>
+                            <TouchableOpacity onPress={() => navigation.navigate('Setting')}>
+                                <EntypoIcon name="cog" style={styles.headerIcon}/>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View style={styles.searchOverlay}>
+                        <View style={styles.searchBoxContainer}>
+                            <TextInput
+                                style={styles.inputBox}
+                                autoCapitalize='none'
+                                placeholder={'Search'}
+                                placeholderTextColor={Colors.greyWeakColor}
+                                value={keyword}
+                                onChangeText={(text) => this.onSearch(text)}
+                            >
+                            </TextInput>
+                            <TouchableOpacity onPress={() => this.setState({ distanceSearch: !distanceSearch })}>
+                                <EntypoIcon name="location-pin" style={[styles.searchBoxIcon, { fontSize: RFPercentage(4.2) }, distanceSearch ? { color: Colors.yellowToneColor } : null]}/>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => this.setState({ categorySearch: !categorySearch })}>
+                                <EntypoIcon name="funnel" style={[styles.searchBoxIcon, categorySearch ? { color: Colors.yellowToneColor } : null]}/>
+                            </TouchableOpacity>
+                        </View>
+                        {
+                            distanceSearch &&
+                            <View style={styles.distanceSearchPart}>
+                                <SliderPicker
+                                    minLabel={'0'}
+                                    maxLabel={'3000'}
+                                    maxValue={3000}
+                                    callback={position => this.onDistanceSearch(position)}
+                                    defaultValue={distance}
+                                    labelFontColor={Colors.whiteColor}
+                                    labelFontWeight={'200'}
+                                    showFill={true}
+                                    fillColor={Colors.yellowToneColor}
+                                    labelFontSize={22}
+                                    labelFontWeight={'bold'}
+                                    showNumberScale={true}
+                                    showSeparatorScale={true}
+                                    buttonBackgroundColor={Colors.yellowToneColor}
+                                    scaleNumberFontWeight={'200'}
+                                    buttonDimensionsPercentage={6}
+                                    heightPercentage={1}
+                                    widthPercentage={80}
+                                />
+                                <Text style={{ fontSize: RFPercentage(2.5), fontWeight: 'bold', color: Colors.whiteColor, position: 'absolute', alignSelf: 'center' }}>{distance} mi</Text>
+                            </View>
+                        }
+                        {
+                            categorySearch &&
+                            <View style={styles.categorySearchPart}>
+                                {
+                                    categories.map((each, index) => {
+                                        return (
+                                            <TouchableOpacity key={index} style={[styles.categorySearchBtn, activeCategories?.findIndex(e => e.name == each.name) > -1 ? { borderColor: Colors.yellowToneColor } : null]} onPress={() => this.onCategorySearch(each)}>
+                                                <Text style={styles.btnTxt}>
+                                                    {each.name}
+                                                </Text>
+                                                {/* <TouchableOpacity onPress={() => {
+                        var cates = [...categories];
+                        cates.splice(cates.findIndex(e => e.id == each.id), 1);
+                        setCategories(cates);
+                        }}>
+                        <EntypoIcon name="circle-with-cross" style={styles.iconClose}></EntypoIcon>
+                        </TouchableOpacity> */}
+                                            </TouchableOpacity>
+                                        )
+                                    })
+                                }
+                            </View>
+                        }
+                    </View>
+
+
+                    <ScrollView style={styles.scrollBody}>
+                        {
+                            business.map((each, index) => {
+                                if (Constants.user?.bid) {
+                                    if (Constants.user?.bid == each.id) return null;
+                                }
+                                return <BusinessItem key={index} item={each} onPress={this.onBusinessItem} onRefresh={() => this.setState({ refresh: !refresh })} showAlert={this.showAlert} />
+                            })
+                        }
+                        {
+                            business.length == 0 &&
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyTxt}>No Items</Text>
+                            </View>
+                        }
+                    </ScrollView>
+                </ImageBackground>
+            );
+        }
+
         return (
             <ImageBackground style={styles.container} source={Images.background}>
                 <View style={styles.header}>
                     <View style={styles.iconProfileContainer}>
-                        <TouchableOpacity onPress={onPressProfile}>
-                            <EntypoIcon name="user" style={styles.headerIcon}></EntypoIcon>
+                        <TouchableOpacity onPress={this.onPressProfile}>
+                            <EntypoIcon name="user" style={styles.headerIcon}/>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.iconMapContainer}>
-                        <TouchableOpacity onPress={() => navigation.navigate('MapView')}>
-                            <EntypoIcon name="map" style={[styles.headerIcon, { fontSize: RFPercentage(3.2) }]}></EntypoIcon>
+                        <TouchableOpacity onPress={() => navigation.navigate('AddService')}>
+                            <EntypoIcon name="plus" style={[styles.headerIcon, { fontSize: RFPercentage(3.2) }]}/>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.titleContainer}>
@@ -253,223 +397,98 @@ export default function BusinessListScreen({ navigation }) {
                                 navigation.navigate('Message')
                             }
                             else {
-                                showAlert();
+                                this.showAlert();
                             }
                         }}>
-                            <EntypoIcon name="message" style={styles.headerIcon}></EntypoIcon>
+                            <EntypoIcon name="message" style={styles.headerIcon}/>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.iconSettingContainer}>
                         <TouchableOpacity onPress={() => navigation.navigate('Setting')}>
-                            <EntypoIcon name="cog" style={styles.headerIcon}></EntypoIcon>
+                            <EntypoIcon name="cog" style={styles.headerIcon}/>
                         </TouchableOpacity>
                     </View>
                 </View>
-
-                <View style={styles.searchOverlay}>
-                    <View style={styles.searchBoxContainer}>
-                        <TextInput
-                            style={styles.inputBox}
-                            autoCapitalize='none'
-                            placeholder={'Search'}
-                            placeholderTextColor={Colors.greyWeakColor}
-                            value={keyword}
-                            onChangeText={(text) => onSearch(text)}
-                        >
-                        </TextInput>
-                        <TouchableOpacity onPress={() => setDistanceSearch(!distanceSearch)}>
-                            <EntypoIcon name="location-pin" style={[styles.searchBoxIcon, { fontSize: RFPercentage(4.2) }, distanceSearch ? { color: Colors.yellowToneColor } : null]}></EntypoIcon>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setCategorySearch(!categorySearch)}>
-                            <EntypoIcon name="funnel" style={[styles.searchBoxIcon, categorySearch ? { color: Colors.yellowToneColor } : null]}></EntypoIcon>
-                        </TouchableOpacity>
-                    </View>
-                    {
-                        distanceSearch &&
-                        <View style={styles.distanceSearchPart}>
-                            <SliderPicker
-                                minLabel={'0'}
-                                maxLabel={'3000'}
-                                maxValue={3000}
-                                callback={position => onDistanceSearch(position)}
-                                defaultValue={distance}
-                                labelFontColor={Colors.whiteColor}
-                                labelFontWeight={'200'}
-                                showFill={true}
-                                fillColor={Colors.yellowToneColor}
-                                labelFontSize={22}
-                                labelFontWeight={'bold'}
-                                showNumberScale={true}
-                                showSeparatorScale={true}
-                                buttonBackgroundColor={Colors.yellowToneColor}
-                                scaleNumberFontWeight={'200'}
-                                buttonDimensionsPercentage={6}
-                                heightPercentage={1}
-                                widthPercentage={80}
-                            />
-                            <Text style={{ fontSize: RFPercentage(2.5), fontWeight: 'bold', color: Colors.whiteColor, position: 'absolute', alignSelf: 'center' }}>{distance} mi</Text>
-                        </View>
-                    }
-                    {
-                        categorySearch &&
-                        <View style={styles.categorySearchPart}>
-                            {
-                                categories.map((each, index) => {
-                                    return (
-                                        <TouchableOpacity key={index} style={[styles.categorySearchBtn, activeCategories?.findIndex(e => e.name == each.name) > -1 ? { borderColor: Colors.yellowToneColor } : null]} onPress={() => onCategorySearch(each)}>
-                                            <Text style={styles.btnTxt}>
-                                                {each.name}
-                                            </Text>
-                                            {/* <TouchableOpacity onPress={() => {
-                        var cates = [...categories];
-                        cates.splice(cates.findIndex(e => e.id == each.id), 1);
-                        setCategories(cates);
-                        }}>
-                        <EntypoIcon name="circle-with-cross" style={styles.iconClose}></EntypoIcon>
-                        </TouchableOpacity> */}
-                                        </TouchableOpacity>
-                                    )
-                                })
-                            }
-                        </View>
-                    }
-                </View>
-
 
                 <ScrollView style={styles.scrollBody}>
-                    {
-                        business.map((each, index) => {
-                            if (Constants.user?.bid) {
-                                if (Constants.user?.bid == each.id) return null;
-                            }
-                            return <BusinessItem key={index} item={each} onPress={onBusinessItem} onRefresh={onRefresh} showAlert={showAlert} />
-                        })
-                    }
-                    {
-                        business.length == 0 &&
-                        <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyTxt}>No Items</Text>
-                        </View>
-                    }
-                </ScrollView>
-            </ImageBackground>
-        );
-    }
-
-    return (
-        <ImageBackground style={styles.container} source={Images.background}>
-            <View style={styles.header}>
-                <View style={styles.iconProfileContainer}>
-                    <TouchableOpacity onPress={onPressProfile}>
-                        <EntypoIcon name="user" style={styles.headerIcon}></EntypoIcon>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.iconMapContainer}>
-                    <TouchableOpacity onPress={() => navigation.navigate('AddService')}>
-                        <EntypoIcon name="plus" style={[styles.headerIcon, { fontSize: RFPercentage(3.2) }]}></EntypoIcon>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.titleContainer}>
-                    <Text style={styles.titleTxt}>Hunters Loop</Text>
-                </View>
-                <View style={styles.iconMessageContainer}>
-                    <TouchableOpacity onPress={() => {
-                        if (Constants.user) {
-                            navigation.navigate('Message')
-                        }
-                        else {
-                            showAlert();
-                        }
-                    }}>
-                        <EntypoIcon name="message" style={styles.headerIcon}></EntypoIcon>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.iconSettingContainer}>
-                    <TouchableOpacity onPress={() => navigation.navigate('Setting')}>
-                        <EntypoIcon name="cog" style={styles.headerIcon}></EntypoIcon>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            <ScrollView style={styles.scrollBody}>
-                <View style={{ width: '100%', padding: 10 }}>
-                    <View style={{ width: '100%', borderRadius: 10, overflow: 'hidden', backgroundColor: 'white', alignSelf: 'center' }}>
-                        <Image style={{ width: '100%', height: 250, alignSelf: 'center', }} resizeMode={'cover'} source={{ uri: myBusiness.img }} />
-                        <View style={{ padding: 10 }}>
-                            <Text>{myBusiness.name}</Text>
-                            <View style={{ flexDirection: 'row', marginTop: 5 }}>
-                                <StarRating
-                                    starSize={15}
-                                    fullStarColor={Colors.yellowToneColor}
-                                    disabled={true}
-                                    maxStars={5}
-                                    rating={myBusiness.rating}
-                                    selectedStar={(rating) => { }}
-                                />
-                                <Text style={{ marginLeft: 5 }} >{myBusiness.rating}</Text>
+                    <View style={{ width: '100%', padding: 10 }}>
+                        <View style={{ width: '100%', borderRadius: 10, overflow: 'hidden', backgroundColor: 'white', alignSelf: 'center' }}>
+                            <Image style={{ width: '100%', height: 250, alignSelf: 'center', }} resizeMode={'cover'} source={{ uri: myBusiness.img }} />
+                            <View style={{ padding: 10 }}>
+                                <Text>{myBusiness.name}</Text>
+                                <View style={{ flexDirection: 'row', marginTop: 5 }}>
+                                    <StarRating
+                                        starSize={15}
+                                        fullStarColor={Colors.yellowToneColor}
+                                        disabled={true}
+                                        maxStars={5}
+                                        rating={myBusiness.rating}
+                                        selectedStar={(rating) => { }}
+                                    />
+                                    <Text style={{ marginLeft: 5 }} >{myBusiness.rating}</Text>
+                                </View>
                             </View>
+
                         </View>
-
                     </View>
-                </View>
-                <View style={{ width: '100%', padding: 10 }}>
-                {
-                    Constants.categories.map(category => {
-                        const render_services = myServices().filter(one => one.cid == category.id);
-                        if (render_services.length == 0 ) return null;
-                        // console.log({render_services});
-                        return (
-                            <Collapse key={category.id} style={{backgroundColor: 'white', marginBottom:5, borderRadius:5}}>
-                                <CollapseHeader>
-                                    <View flexDirection='row' style={{padding:10, backgroundColor:''}}>
-                                        <EntypoIcon name="chevron-thin-down" style1={[styles.headerIcon, { fontSize: RFPercentage(3.2), marginLeft:10 }]}></EntypoIcon>
-                                        <Text style={{textTransform:'uppercase', marginLeft:5}} >{category.name} ({render_services.length}) </Text>
-                                    </View>
-                                </CollapseHeader>
-                                <CollapseBody>
-                                    {
-                                        render_services.map(one => {
-                                            one.mode = 'view';
-                                            return (
-                                                <View key={one.id} style={{padding: 10, borderBottomWidth:1, borderColor:'black'}}>
-                                                    <Text style={{fontWeight:'bold'}}>{one.name}</Text>
-                                                    <Text>{one.about}</Text>
-                                                    <Text style={{fontSize:10}}>{one.season.from} ~ {one.season.to}</Text>
-                                                    <View style={{flexDirection:'row', paddingTop:5}}>
-                                                        <EntypoIcon name="user" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(2.5), }]}></EntypoIcon>
-                                                        <Text style={{marginRight:15, marginLeft:5}}>{one.hunters}</Text>
-                                                        <EntypoIcon name="calendar" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(3), }]}></EntypoIcon>
-                                                        <Text style={{marginLeft:5}}>{one.days}</Text>
-                                                        <View style={{flex:1}}></View>
-                                                        <View style={{ flexDirection:'row' }}>
-                                                            <TouchableOpacity style={{padding:5}} onPress={() => { navigation.navigate('ServiceDetail', { serviceItem: one }) }}>
-                                                                <EntypoIcon name="eye" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(3), }]}></EntypoIcon>
-                                                            </TouchableOpacity>
-                                                            <TouchableOpacity style={{padding:5}} onPress={() => {navigation.navigate('AddService', { service: one })}}>
-                                                            <EntypoIcon name="pencil" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(3), }]}></EntypoIcon>
-                                                            </TouchableOpacity>
-                                                            <TouchableOpacity style={{padding:5}} onPress={() => {}}>
-                                                            <EntypoIcon name="trash" style={[styles.headerIcon, { color:'red', fontSize: RFPercentage(3), }]}></EntypoIcon>
-                                                            </TouchableOpacity>
+                    <View style={{ width: '100%', padding: 10 }}>
+                        {
+                            Constants.categories.map(category => {
+                                const render_services = this.myServices().filter(one => one.cid == category.id);
+                                if (render_services.length == 0 ) return null;
+                                // console.log({render_services});
+                                return (
+                                    <Collapse key={category.id} style={{backgroundColor: 'white', marginBottom:5, borderRadius:5}}>
+                                        <CollapseHeader>
+                                            <View flexDirection='row' style={{padding:10, backgroundColor:''}}>
+                                                <EntypoIcon name="chevron-thin-down" style1={[styles.headerIcon, { fontSize: RFPercentage(3.2), marginLeft:10 }]}/>
+                                                <Text style={{textTransform:'uppercase', marginLeft:5}} >{category.name} ({render_services.length}) </Text>
+                                            </View>
+                                        </CollapseHeader>
+                                        <CollapseBody>
+                                            {
+                                                render_services.map(one => {
+                                                    one.mode = 'view';
+                                                    return (
+                                                        <View key={one.id} style={{padding: 10, borderBottomWidth:1, borderColor:'black'}}>
+                                                            <Text style={{fontWeight:'bold'}}>{one.name}</Text>
+                                                            <Text>{one.about}</Text>
+                                                            <Text style={{fontSize:10}}>{one.season.from} ~ {one.season.to}</Text>
+                                                            <View style={{flexDirection:'row', paddingTop:5}}>
+                                                                <EntypoIcon name="user" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(2.5), }]}/>
+                                                                <Text style={{marginRight:15, marginLeft:5}}>{one.hunters}</Text>
+                                                                <EntypoIcon name="calendar" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(3), }]}/>
+                                                                <Text style={{marginLeft:5}}>{one.days}</Text>
+                                                                <View style={{flex:1}}/>
+                                                                <View style={{ flexDirection:'row' }}>
+                                                                    <TouchableOpacity style={{padding:5}} onPress={() => { navigation.navigate('ServiceDetail', { serviceItem: one }) }}>
+                                                                        <EntypoIcon name="eye" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(3), }]}/>
+                                                                    </TouchableOpacity>
+                                                                    <TouchableOpacity style={{padding:5}} onPress={() => {navigation.navigate('AddService', { service: one })}}>
+                                                                        <EntypoIcon name="pencil" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(3), }]}/>
+                                                                    </TouchableOpacity>
+                                                                    <TouchableOpacity style={{padding:5}} onPress={() => {}}>
+                                                                        <EntypoIcon name="trash" style={[styles.headerIcon, { color:'red', fontSize: RFPercentage(3), }]}/>
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            </View>
                                                         </View>
-                                                    </View>
-                                                </View>
-                                            )
-                                        })
-                                    }
-                                    
-                                </CollapseBody>
-                            </Collapse>
-                        )
-                    })
-                }
-                </View>
+                                                    )
+                                                })
+                                            }
+
+                                        </CollapseBody>
+                                    </Collapse>
+                                )
+                            })
+                        }
+                    </View>
 
 
 
 
 
-                {/* {
+                    {/* {
           business.map((each, index) => {
             if (Constants.user?.bid) {
               if (Constants.user?.bid == each.id) return null;
@@ -483,11 +502,10 @@ export default function BusinessListScreen({ navigation }) {
             <Text style={styles.emptyTxt}>No Items</Text>
           </View>
         } */}
-            </ScrollView>
-        </ImageBackground>
-    );
-
-    
+                </ScrollView>
+            </ImageBackground>
+        );
+    }
 }
 
 const styles = StyleSheet.create({

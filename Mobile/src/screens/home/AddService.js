@@ -10,9 +10,8 @@ import {
     Platform,
     Text,
     TextInput,
-    ImageBackground,
     Alert,
-    KeyboardAvoidingView,
+    KeyboardAvoidingView, Linking,
 } from 'react-native';
 import normalize from 'react-native-normalize';
 import { RFPercentage } from 'react-native-responsive-fontsize';
@@ -20,33 +19,20 @@ import { RFPercentage } from 'react-native-responsive-fontsize';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
 EntypoIcon.loadFont();
 
-import moment from 'moment';
-
 import { useIsFocused } from '@react-navigation/native';
 
 import Spinner from 'react-native-loading-spinner-overlay';
-import ImagePicker from 'react-native-image-picker';
 import ImageResizer from 'react-native-image-resizer';
-import DropDownPicker from 'react-native-dropdown-picker';
 import RNPickerSelect from 'react-native-picker-select';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { TextInputMask } from 'react-native-masked-text';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
-import { Colors, Images, Constants } from '@constants';
+import { Colors, Constants } from '@constants';
 
-import { getData, setData, uploadMedia } from '../../service/firebase';
+import { setData, uploadMedia } from '../../service/firebase';
 
-import RNIap, {
-    purchaseErrorListener,
-    purchaseUpdatedListener,
-    ProductPurchase,
-    PurchaseError
-} from 'react-native-iap';
 import CheckBox from '@react-native-community/checkbox';
 import DatePicker from 'react-native-datepicker'
-
-purchaseUpdateSubscription = null
-purchaseErrorSubscription = null
+import {check, PERMISSIONS, RESULTS} from "react-native-permissions";
 
 export default function AddService({ navigation, route }) {
     const [service, setService] = useState({season:{}, detailImgs:[]});
@@ -77,7 +63,7 @@ export default function AddService({ navigation, route }) {
     if (useIsFocused() && Constants.refreshFlag) {
         Constants.refreshFlag = false;
         if (Constants.user?.bid) {
-            var business = Constants.business.find(each => each.id == Constants.user?.bid);
+            let business = Constants.business.find(each => each.id == Constants.user?.bid);
             if (business) {
                 setLogo(business.img ? business.img : null);
                 setBname(business.name);
@@ -105,30 +91,44 @@ export default function AddService({ navigation, route }) {
         }
     }, [address])
 
-    onUpdateServiceImage = (index = null) => {
-        var options = {
-            title: 'Select Image',
-            storageOptions: {
-                skipBackup: true,
-                path: 'images',
-            },
+    const onUpdateServiceImage = (index = null) => {
+        Alert.alert(
+            'Select Image',
+            '',
+            [
+                {
+                    text: "Cancel", onPress: () => {
+                    }
+                },
+                {
+                    text: "Take photo", onPress: async () => {
+                        await takePhoto(index);
+                    }
+                },
+                {
+                    text: "From library", onPress: async () => {
+                        await pickImage(index);
+                    }
+                },
+            ]);
+    };
+
+
+    const pickImage = (index = null) => {
+        let options = {
+            mediaType: 'photo'
         };
-        ImagePicker.showImagePicker(options, response => {
+        launchImageLibrary(options, response => {
             if (response.didCancel) {
             } else if (response.error) {
-            } else if (response.customButton) {
             } else {
-                // console.log(response);
-                if (Platform.OS != "android") {
-                    response.path = response.uri; 
-                }
-                if (index === null) {
+                if (!index) {
                     service.img = response.uri
-                    setmainImagePath(response.path);
+                    setmainImagePath(response.uri);
                 } else {
                     service.detailImgs[index] = response.uri
                     let new_paths = imagesPath;
-                    new_paths[index] = response.path;
+                    new_paths[index] = response.uri;
                     setImagesPath(new_paths);
                     
                 }
@@ -138,9 +138,68 @@ export default function AddService({ navigation, route }) {
         });
     };
 
-    uploadPhoto = (localPath, fbPath) => {
+    const checkCameraPermission = () => {
+        return new Promise((resolve, reject) => {
+            check(PERMISSIONS.IOS.CAMERA)
+                .then((result) => {
+                    if (result == RESULTS.GRANTED) resolve(true);
+                    else resolve(false);
+                })
+                .catch((error) => {
+                    resolve(false);
+                })
+        })
+    }
+
+    const takePhoto = async (index = null) => {
+        if (Platform.OS === 'ios') {
+            let isCameraPermission = await checkCameraPermission();
+            if (!isCameraPermission) {
+                Alert.alert(
+                    'Visit settings and allow camera permission',
+                    '',
+                    [
+                        {
+                            text: "OK", onPress: () => {
+                                Linking.openURL('app-settings:');
+                            }
+                        },
+                        {
+                            text: "CANCEL", onPress: () => {
+                            }
+                        }
+                    ]);
+                return;
+            }
+        }
+
+        let options = {
+            mediaType: 'photo'
+        };
+        launchCamera(options, response => {
+            if (response.didCancel) {
+            } else if (response.error) {
+                console.log('pick error', response.error)
+            } else {
+                if (!index) {
+                    service.img = response.uri
+                    setmainImagePath(response.uri);
+                } else {
+                    service.detailImgs[index] = response.uri
+                    let new_paths = imagesPath;
+                    new_paths[index] = response.uri;
+                    setImagesPath(new_paths);
+
+                }
+                // setService(service);
+                setRefresh(!refresh)
+            }
+        });
+    }
+
+    const uploadPhoto = (localPath, fbPath) => {
         return new Promise(async (resolve, reject) => {
-            var platformPhotoLocalPath = Platform.OS === "android" ? localPath : localPath.replace("file://", "")
+            let platformPhotoLocalPath = Platform.OS === "android" ? localPath : localPath.replace("file://", "")
             let newPath = '';
             await ImageResizer.createResizedImage(platformPhotoLocalPath, 400, 200, 'PNG', 50, 0, null)
                 .then(response => {
@@ -166,7 +225,7 @@ export default function AddService({ navigation, route }) {
         })
     }
 
-    onPreview = () => {
+    const onPreview = () => {
         if (!service.name) return Alert.alert('', 'Please input the title');
         if (!service.days) return Alert.alert('', 'Please input the Hunt Duration');
         if (!service.hunters) return Alert.alert('', 'Please input the Hunt per package');
@@ -175,7 +234,7 @@ export default function AddService({ navigation, route }) {
         navigation.navigate('ServiceDetail', { serviceItem: service });
     }
 
-    onRequest = async () => {
+    const onRequest = async () => {
         if (!service.name) return Alert.alert('', 'Please input the title');
         if (!service.days) return Alert.alert('', 'Please input the Hunt Duration');
         if (!service.hunters) return Alert.alert('', 'Please input the Hunt per package');
@@ -217,31 +276,18 @@ export default function AddService({ navigation, route }) {
                 }
 
                 setSpinner(false);
+            }).catch(error => {
+                setSpinner(false);
+                Alert.alert('', 'Publishing service is failed.');
             })
         } catch (err) {
             console.warn(err.code, err.message);
+            setSpinner(false);
             Alert.alert(err.message);
         }
     }
 
-    iap_success = async () => {
-        setSpinner(true);
-        if (photoLocalPath) {
-            await uploadPhoto()
-                .then(() => {
-                    requestBusiness();
-                })
-                .catch((err) => {
-                    console.log('upload photo error', err);
-                    setSpinner(false);
-                })
-        }
-        else {
-            requestBusiness();
-        }
-    }
-
-    updateServiceProperty = (key, value) => {
+    const updateServiceProperty = (key, value) => {
         service[key] = value;
         setService(service);
         setRefresh(!refresh);
@@ -260,7 +306,7 @@ export default function AddService({ navigation, route }) {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.titleTxt}>Add a Service</Text>
+                    <Text style={styles.titleTxt}>{ (route.params?.service)?'Edit Service':'Add a Service'}</Text>
                 </View>
             </View>
 
@@ -274,6 +320,7 @@ export default function AddService({ navigation, route }) {
                                 })
                             )
                         }
+                        useNativeAndroidPickerStyle={false}
                         onValueChange={(value) => updateServiceProperty('cid', value) }
                         value={service.cid}
                         placeholder={{}}
@@ -289,7 +336,7 @@ export default function AddService({ navigation, route }) {
                     style={styles.inputBox}
                     autoCapitalize='none'
                     placeholder={'Hunt Title*'}
-                    placeholderTextColor={Colors.greyColor}
+                    placeholderTextColor={Colors.riskColor}
                     value={service.name}
                     onChangeText={(text) => updateServiceProperty('name', text)}
                 ></TextInput>
@@ -327,7 +374,7 @@ export default function AddService({ navigation, route }) {
                     style={styles.inputBox}
                     autoCapitalize='none'
                     placeholder={'Hunt Duration (day/s)*'}
-                    placeholderTextColor={Colors.greyColor}
+                    placeholderTextColor={Colors.riskColor}
                     value={service.days}
                     onChangeText={(text) => updateServiceProperty('days', text)}
                     keyboardType='number-pad'
@@ -336,7 +383,7 @@ export default function AddService({ navigation, route }) {
                     style={styles.inputBox}
                     autoCapitalize='none'
                     placeholder={'Hunt per package*'}
-                    placeholderTextColor={Colors.greyColor}
+                    placeholderTextColor={Colors.riskColor}
                     value={service.hunters}
                     onChangeText={(text) => updateServiceProperty('hunters', text)}
                     keyboardType='number-pad'
@@ -360,8 +407,8 @@ export default function AddService({ navigation, route }) {
                     <Text style={{paddingTop:5}}>Contact guide for package price</Text>
                 </View>
                 
-                <Text style={{marginTop:10}}>Hunting Season</Text>
-                <View style={{flexDirection:'row'}} >
+                <Text style={[styles.logoTxt, {marginTop:15}]}>Hunting Season</Text>
+                <View style={{flexDirection:'row', marginTop: normalize(10, 'height') }} >
                     <DatePicker
                         style={{flex:1}}
                         date={service.season.from}
@@ -541,8 +588,8 @@ export default function AddService({ navigation, route }) {
                     autoCapitalize='none'
                     placeholder={'Terms and Conditions'}
                     placeholderTextColor={Colors.greyColor}
-                    value={service.terms}
-                    onChangeText={(text) => setBname(text)}
+                    defaultValue={service.terms}
+                    onChangeText={(text) => service.terms = text}
                     multiline={true}
                     numberOfLines={5}
                     textAlignVertical='top'
@@ -553,7 +600,7 @@ export default function AddService({ navigation, route }) {
                         <Text style={styles.btnTxt}>Preview</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.btn} onPress={() => onRequest()}>
-                        <Text style={styles.btnTxt}>Publish</Text>
+                        <Text style={styles.btnTxt}>{route.params?.service?'Update':'Publish'}</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -592,7 +639,7 @@ const styles = StyleSheet.create({
         color: Colors.whiteColor,
     },
     titleTxt: {
-        fontSize: RFPercentage(2.2),
+        fontSize: RFPercentage(3),
         fontWeight: '600',
         color: Colors.yellowToneColor,
     },

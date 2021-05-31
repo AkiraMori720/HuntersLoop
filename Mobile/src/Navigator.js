@@ -35,7 +35,6 @@ import RequestScreen from './screens/setting/Request';
 import { Colors } from '@constants';
 
 const Stack = createStackNavigator();
-
 function AuthStack() {
   return (
     <Stack.Navigator
@@ -175,7 +174,7 @@ function SettingStack (){
   )
 }
 
-function App() {
+const App = React.memo(() => {
   return (
     <NavigationContainer>
       <Stack.Navigator headerMode='none' initialRouteName="Splash" screenOptions={{ cardStyle: {backgroundColor: Colors.blackColor }}}>
@@ -190,8 +189,6 @@ function App() {
       </Stack.Navigator>
     </NavigationContainer>
   )
-}
-
-
+});
 
 export default App;

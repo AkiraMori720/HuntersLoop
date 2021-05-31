@@ -52,7 +52,7 @@ export default function SigninScreen({ navigation }) {
       })
   }, [])
 
-  onAppleSignin = async () => {
+  const onAppleSignin = async () => {
     await appleSignin()
       .then(async (res) => {
         console.log('apple signin success', res);
@@ -63,7 +63,7 @@ export default function SigninScreen({ navigation }) {
       })
   }
 
-  onGoogleSignin = async () => {
+  const onGoogleSignin = async () => {
     await googleSignin()
       .then(async (res) => {
         console.log('google signin success', res);
@@ -74,7 +74,7 @@ export default function SigninScreen({ navigation }) {
       })
   }
 
-  onFacebookSignin = async () => {
+  const onFacebookSignin = async () => {
     await facebookSignin()
       .then(async (res) => {
         console.log('facebook signin success', res);
@@ -85,7 +85,7 @@ export default function SigninScreen({ navigation }) {
       })
   }
 
-  getUserRegistered = async (userInfo) => {
+  const getUserRegistered = async (userInfo) => {
     await getUserSocialRegistered(userInfo.email)
       .then((user) => {
         if (user == 'no exist') {
@@ -115,12 +115,12 @@ export default function SigninScreen({ navigation }) {
       })
   }
 
-  createUserWithSocial = async (userInfo) => {
-    console.log('create user info')
+  const createUserWithSocial = async (userInfo) => {
+    console.log('create user info', userInfo)
     var user = {
       id: userInfo.uid,
-      name: '',
-      img: '',
+      name: userInfo.displayName,
+      img: userInfo.photoURL,
       email: userInfo.email,
       pwd: '',
       address: '',
@@ -136,7 +136,7 @@ export default function SigninScreen({ navigation }) {
         console.log('create user success');
         Constants.user = user;
         AsyncStorage.setItem('user', JSON.stringify(user));
-        navigation.navigate('Welcome');
+        navigation.navigate("Home", { screen: 'BusinessList' });
       })
       .catch((err) => {
         console.log('create user error', err);
@@ -145,7 +145,7 @@ export default function SigninScreen({ navigation }) {
   }
 
   //////////////////
-  onSignin = async () => {
+  const onSignin = async () => {
     if (!email) {
       Alert.alert('Please enter email');
       return;

@@ -12,7 +12,7 @@ import {
   TextInput,
   ImageBackground,
   Alert,
-  KeyboardAvoidingView,
+  KeyboardAvoidingView, Linking,
 } from 'react-native';
 import normalize from 'react-native-normalize';
 import { RFPercentage } from 'react-native-responsive-fontsize';
@@ -25,28 +25,28 @@ import moment from 'moment';
 import { useIsFocused } from '@react-navigation/native';
 
 import Spinner from 'react-native-loading-spinner-overlay';
-import ImagePicker from 'react-native-image-picker';
 import ImageResizer from 'react-native-image-resizer';
-import DropDownPicker from 'react-native-dropdown-picker';
-import RNPickerSelect from 'react-native-picker-select';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { TextInputMask } from 'react-native-masked-text';
 
 import { Colors, Images, Constants } from '@constants';
 
-import { getData, setData, uploadMedia } from '../../service/firebase';
+import { setData, uploadMedia } from '../../service/firebase';
 
-
-
-import RNIap, {
+import {
+  finishTransaction,
+  flushFailedPurchasesCachedAsPendingAndroid, getSubscriptions,
+  initConnection,
   purchaseErrorListener,
-  purchaseUpdatedListener,
-  ProductPurchase,
-  PurchaseError
+  purchaseUpdatedListener, requestSubscription,
 } from 'react-native-iap';
+import {launchCamera, launchImageLibrary} from "react-native-image-picker";
+import {check, PERMISSIONS, RESULTS} from "react-native-permissions";
+import RNPickerSelect from "react-native-picker-select";
+import DropDownPicker from "react-native-dropdown-picker";
 
-purchaseUpdateSubscription = null
-purchaseErrorSubscription = null
+let purchaseUpdateSubscription = null
+let purchaseErrorSubscription = null
 
 export default function RequestScreen({ navigation }) {
   const [logo, setLogo] = useState();
@@ -91,18 +91,35 @@ export default function RequestScreen({ navigation }) {
     }
   }, [address])
 
-  onBusinessLogo = () => {
-    var options = {
-      title: 'Select Image',
-      storageOptions: {
-        skipBackup: true,
-        path: 'images',
-      },
+  const onBusinessLogo = () => {
+    Alert.alert(
+        'Select Image',
+        '',
+        [
+          {
+            text: "Cancel", onPress: () => {
+            }
+          },
+          {
+            text: "Take photo", onPress: async () => {
+              await takePhoto();
+            }
+          },
+          {
+            text: "From library", onPress: async () => {
+              await pickImage();
+            }
+          },
+        ]);
+  };
+
+  const pickImage = () => {
+    let options = {
+      mediaType: 'photo'
     };
-    ImagePicker.showImagePicker(options, response => {
+    launchImageLibrary(options, response => {
       if (response.didCancel) {
       } else if (response.error) {
-      } else if (response.customButton) {
       } else {
         setPhotoLocalPath(response.uri);
         setLogo(response.uri)
@@ -110,7 +127,57 @@ export default function RequestScreen({ navigation }) {
     });
   };
 
-  uploadPhoto = () => {
+  const checkCameraPermission = () => {
+    return new Promise((resolve, reject) => {
+      check(PERMISSIONS.IOS.CAMERA)
+          .then((result) => {
+            if (result == RESULTS.GRANTED) resolve(true);
+            else resolve(false);
+          })
+          .catch((error) => {
+            resolve(false);
+          })
+    })
+  }
+
+  const takePhoto = async () => {
+    if (Platform.OS === 'ios') {
+      let isCameraPermission = await checkCameraPermission();
+      if (!isCameraPermission) {
+        Alert.alert(
+            'Visit settings and allow camera permission',
+            '',
+            [
+              {
+                text: "OK", onPress: () => {
+                  Linking.openURL('app-settings:');
+                }
+              },
+              {
+                text: "CANCEL", onPress: () => {
+                }
+              }
+            ]);
+        return;
+      }
+    }
+
+    let options = {
+      mediaType: 'photo'
+    };
+    launchCamera(options, response => {
+      if (response.didCancel) {
+      } else if (response.error) {
+        console.log('pick error', response.error)
+      } else {
+        // console.log('path', response.uri)
+        setPhotoLocalPath(response.uri);
+        setLogo(response.uri)
+      }
+    });
+  }
+
+  const uploadPhoto = () => {
     return new Promise(async (resolve, reject) => {
       var platformPhotoLocalPath = Platform.OS === "android" ? photoLocalPath : photoLocalPath.replace("file://", "")
       let newPath = '';
@@ -138,7 +205,7 @@ export default function RequestScreen({ navigation }) {
     })
   }
 
-  requestBusiness = async () => {
+  const requestBusiness = async () => {
 
     var nBusiness = {};
     nBusiness.id = '';
@@ -200,12 +267,12 @@ export default function RequestScreen({ navigation }) {
       })
   }
 
-  validateEmail = () => {
+  const validateEmail = () => {
     let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     return reg.test(email);
   }
 
-  remoteUpdateUserToBusiness = async () => {
+  const remoteUpdateUserToBusiness = async () => {
     await setData('users', 'update', Constants.user)
       .then((res) => {
         console.log('remote user updated to business, but need to be approved');
@@ -215,46 +282,51 @@ export default function RequestScreen({ navigation }) {
       })
   }
 
-  init_iap = async() => {
+  const init_iap = async() => {
     if (inited_IAP) return;
     inited_IAP = true;
-    const result = await RNIap.initConnection();
-    await RNIap.flushFailedPurchasesCachedAsPendingAndroid();
-      purchaseUpdateSubscription = purchaseUpdatedListener(
-        async (purchase) => {
-          const receipt = purchase.transactionReceipt;
-          if (receipt) {
-            try {
-              iap_success();
-              // if (Platform.OS === 'ios') {
-              //   finishTransactionIOS(purchase.transactionId);
-              // } else if (Platform.OS === 'android') {
-              //   // If consumable (can be purchased again)
-              //   consumePurchaseAndroid(purchase.purchaseToken);
-              //   // If not consumable
-              //   acknowledgePurchaseAndroid(purchase.purchaseToken);
-              // }
-              const ackResult = await finishTransaction(purchase);
-            } catch (ackErr) {
-              console.warn('ackErr', ackErr);
-            }
-  
-            this.setState({receipt}, () => this.goNext());
-          }
-        },
-      );
-  
-      purchaseErrorSubscription = purchaseErrorListener(
-        (error) => {
-          console.log('purchaseErrorListener', error);
-          // Alert.alert('purchase error', JSON.stringify(error));
-        },
-    );
+    const result = initConnection()
+        .then(async () => {
+          await flushFailedPurchasesCachedAsPendingAndroid();
+            purchaseUpdateSubscription = purchaseUpdatedListener(
+              async (purchase) => {
+                const receipt = purchase.transactionReceipt;
+                if (receipt) {
+                  try {
+                    iap_success();
+                    // if (Platform.OS === 'ios') {
+                    //   finishTransactionIOS(purchase.transactionId);
+                    // } else if (Platform.OS === 'android') {
+                    //   // If consumable (can be purchased again)
+                    //   consumePurchaseAndroid(purchase.purchaseToken);
+                    //   // If not consumable
+                    //   acknowledgePurchaseAndroid(purchase.purchaseToken);
+                    // }
+                    const ackResult = await finishTransaction(purchase);
+                  } catch (ackErr) {
+                    console.warn('ackErr', ackErr);
+                  }
+
+                  this.setState({receipt}, () => this.goNext());
+                }
+              },
+            );
+
+            purchaseErrorSubscription = purchaseErrorListener(
+              (error) => {
+                console.log('purchaseErrorListener', error);
+                // Alert.alert('purchase error', JSON.stringify(error));
+              },
+          );
+        })
+        .catch((e) =>{
+          console.log('Error', e);
+        });
   }
 
   init_iap();
 
-  onRequest = async () => {
+  const onRequest = async () => {
     if (!logo) {
       Alert.alert('Please upload logo image');
       return;
@@ -284,28 +356,28 @@ export default function RequestScreen({ navigation }) {
     //   return;
     // }
     if (!membershipId) {
-      membershipId = Constants.memberships[0].id
+      setMembershipId(Constants.memberships[0].id);
     }
 
     const membership = Constants.memberships.filter( one => one.id == membershipId)[0];
     if (!membership) return Alert.alert('invalid membership')
 
     if (membership.price == 0) {
-      iap_success()
+      await iap_success()
       return;
     }
 
     try {
-      const products = await RNIap.getSubscriptions([membership.sku]);
+      const products = await getSubscriptions([membership.sku]);
       console.log('---------------', products);
-      await RNIap.requestSubscription(membership.sku);
+      await requestSubscription(membership.sku);
     } catch (err) {
       console.warn(err.code, err.message);
       Alert.alert(err.message);
     }
   }
 
-  iap_success = async ()=> {
+  const iap_success = async ()=> {
     setSpinner(true);
     if (photoLocalPath) {
       await uploadPhoto()
@@ -318,9 +390,15 @@ export default function RequestScreen({ navigation }) {
         })
     }
     else {
-      requestBusiness();
+      await requestBusiness();
     }
   }
+
+  const memberships = Constants.memberships.map(each => ({
+    label: each.level + ' - ' + (each.price == 0 ? 'Free' : ('$' + each.price)),
+    value: each.id
+  }));
+  console.log('memberships', memberships);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -339,7 +417,7 @@ export default function RequestScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView style={styles.body} keyboardShouldPersistTaps='always'>
+      <ScrollView style={styles.body} keyboardShouldPersistTaps='always' showsVerticalScrollIndicator={false}>
         <View style={styles.logo}>
           <TouchableOpacity style={styles.logoBtn} onPress={() => onBusinessLogo()}>
             {
@@ -367,6 +445,7 @@ export default function RequestScreen({ navigation }) {
         </TextInput>
         <GooglePlacesAutocomplete
           ref={refAddress}
+          debounce={300}
           textInputProps={styles.inputBox}
           placeholder='Address'
           enablePoweredByContainer={false}
@@ -381,7 +460,8 @@ export default function RequestScreen({ navigation }) {
           }}
           query={{
             key: 'AIzaSyDdPAhHXaBBh2V5D2kQ3Vy7YYrDrT7UW3I',
-            language: 'en'
+            language: 'en',
+            components: 'country:us'
           }}
         />
 
@@ -416,16 +496,12 @@ export default function RequestScreen({ navigation }) {
           onChangeText={(text) => setSite(text)}
         >
         </TextInput>
-        <View style={[styles.inputBox, { marginBottom: normalize(100, 'height'), paddingLeft: 5 }]}>
+        <View style={[styles.inputBox, { marginBottom: normalize(140, 'height'), paddingLeft: 5 }]}>
           {
             Platform.OS === 'android' &&
             <RNPickerSelect
-              items={
-                Constants.memberships.map(each => ({
-                  label: each.level + ' - ' + (each.price == 0 ? 'Free' : ('$' + each.price)),
-                  value: each.id
-                }))
-              }
+              items={ memberships }
+              useNativeAndroidPickerStyle={false}
               onValueChange={(value) => {
                 // console.log(value)
                 setMembershipId(value);
@@ -440,14 +516,9 @@ export default function RequestScreen({ navigation }) {
             />
           }
           {
-            (Platform.OS === 'ios' && Constants.memberships) && 
+            (Platform.OS === 'ios' && Constants.memberships) &&
             <DropDownPicker
-              items={
-                Constants.memberships.map(each => ({
-                  label: each.level + ' - $' + each.price,
-                  value: each.id
-                }))
-              }
+              items={memberships}
               defaultValue={membershipId && Constants.memberships.findIndex(e=>e.id == membershipId) != -1 ? membershipId : Constants.memberships[0].id}
               placeholder='Select Membership'
               placeholderStyle={{
@@ -496,7 +567,6 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   titleContainer: {
-    width: '60%',
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -505,7 +575,7 @@ const styles = StyleSheet.create({
     color: Colors.whiteColor,
   },
   titleTxt: {
-    fontSize: RFPercentage(2.2),
+    fontSize: RFPercentage(3.5),
     fontWeight: '600',
     color: Colors.yellowToneColor,
   },

@@ -21,16 +21,12 @@ import EntypoIcon from 'react-native-vector-icons/Entypo';
 EntypoIcon.loadFont();
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Spinner from 'react-native-loading-spinner-overlay';
-import ImagePicker from 'react-native-image-picker';
-import ImageResizer from 'react-native-image-resizer';
 import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 import { Colors, Images, Constants } from '@constants';
-import FavoriteItem from '../../components/FavoriteItem';
 
 import { setData, uploadMedia } from '../../service/firebase';
-import RNDateTimePicker from '@react-native-community/datetimepicker';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 export default function BusinessProfileEdit({ navigation, route }) {
     const [business, setBusiness] = useState();
@@ -80,38 +76,111 @@ export default function BusinessProfileEdit({ navigation, route }) {
     if (!business) return null;
 
 
-    updateBusiness = (key, value) => {
+    const updateBusiness = (key, value) => {
         business[key] = value;
         setBusiness(business);
         setRefresh(!refresh);
     }
 
-    onUpdateImage = (index = null) => {
-        var options = {
-            title: 'Select Image',
-            storageOptions: {
-                skipBackup: true,
-                path: 'images',
-            },
+    const onUpdateImage = (index) => {
+        Alert.alert(
+            'Select Image',
+            '',
+            [
+                {
+                    text: "Cancel", onPress: () => {
+                    }
+                },
+                {
+                    text: "Take photo", onPress: async () => {
+                        await takePhoto(index);
+                    }
+                },
+                {
+                    text: "From library", onPress: async () => {
+                        await pickImage(index);
+                    }
+                },
+            ]);
+    };
+
+    const checkCameraPermission = () => {
+        return new Promise((resolve, reject) => {
+            check(PERMISSIONS.IOS.CAMERA)
+                .then((result) => {
+                    if (result == RESULTS.GRANTED) resolve(true);
+                    else resolve(false);
+                })
+                .catch((error) => {
+                    resolve(false);
+                })
+        })
+    }
+
+    const takePhoto = async (index = null) => {
+        if (Platform.OS === 'ios') {
+            let isCameraPermission = await checkCameraPermission();
+            if (!isCameraPermission) {
+                Alert.alert(
+                    'Visit settings and allow camera permission',
+                    '',
+                    [
+                        {
+                            text: "OK", onPress: () => {
+                                Linking.openURL('app-settings:');
+                            }
+                        },
+                        {
+                            text: "CANCEL", onPress: () => {
+                            }
+                        }
+                    ]);
+                return;
+            }
+        }
+
+        let options = {
+            mediaType: 'photo'
         };
-        ImagePicker.showImagePicker(options, response => {
+        launchCamera(options, response => {
             if (response.didCancel) {
             } else if (response.error) {
-            } else if (response.customButton) {
+                console.log('pick error', response.error)
             } else {
-                // console.log(response);
-                if (Platform.OS != "android") {
-                    response.path = response.uri; 
-                }
                 if (index === 'logo') {
                     business.img = response.uri;
-                    setLogoImagePath(response.path);
+                    setLogoImagePath(response.uri);
                 } else if (index === 'icon'){
                     business.icon = response.uri;
-                    setIconImagePath(response.path);
+                    setIconImagePath(response.uri);
                 } else {
                     business.slideImgs[index] = response.uri
-                    imagesPath[index] = response.path
+                    imagesPath[index] = response.uri
+                    setImagesPath(imagesPath);
+                }
+                setBusiness(business)
+                setRefresh(!refresh)
+            }
+        });
+    }
+
+    const pickImage = (index = null) => {
+        let options = {
+            mediaType: 'photo'
+        };
+        launchImageLibrary(options, response => {
+            if (response.didCancel) {
+            } else if (response.error) {
+            } else {
+                if (index === 'logo') {
+                    business.img = response.uri;
+                    setLogoImagePath(response.uri);
+                } else if (index === 'icon'){
+                    business.icon = response.uri;
+                    setIconImagePath(response.uri);
+                } else {
+                    business.slideImgs[index] = response.uri
+                    imagesPath[index] = response.uri
                     setImagesPath(imagesPath);
                 }
                 setBusiness(business)
@@ -120,7 +189,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
         });
     };
 
-    uploadPhoto = (localPath, fbPath) => {
+    const uploadPhoto = (localPath, fbPath) => {
         console.log({localPath, fbPath})
         return new Promise(async (resolve, reject) => {
             var platformPhotoLocalPath = Platform.OS === "android" ? localPath : localPath.replace("file://", "")
@@ -149,7 +218,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
         })
     }
 
-    onSave = async () => {
+    const onSave = async () => {
         setSpinner(true);
         if (business.img && business.img.substring(0,4) != 'http' && logoImagePath) {
             business.img = await uploadPhoto(logoImagePath, business.id + '/main');
@@ -192,7 +261,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
     
 
     return (
-        <KeyboardAvoidingView style={styles.container}>
+        <KeyboardAvoidingView style={styles.container}  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <Spinner
                 visible={spinner}
                 textContent={''}
@@ -209,7 +278,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
             </View>
 
             <View style={styles.body}>
-                <ScrollView keyboardShouldPersistTaps='always' style={{alignSelf: 'center'}}>
+                <ScrollView keyboardShouldPersistTaps='always' style={{alignSelf: 'center', flexGrow: 1}}>
                     <Text style={styles.logoTxt}>Company Logo</Text>
                     <View style={styles.logo}>
                         <TouchableOpacity style={styles.logoBtn} onPress={() => onUpdateImage('logo')}>
@@ -342,14 +411,12 @@ export default function BusinessProfileEdit({ navigation, route }) {
                         value={business.desc}
                         onChangeText={(text) => updateBusiness('desc', text)}
                     ></TextInput>
-
                 </ScrollView>
-            </View>
-
-            <View style={styles.btnContainer}>
-                <TouchableOpacity style={styles.btn} onPress={() => onSave()}>
-                    <Text style={styles.btnTxt}>SAVE</Text>
-                </TouchableOpacity>
+                <View style={styles.btnContainer}>
+                    <TouchableOpacity style={styles.btn} onPress={() => onSave()}>
+                        <Text style={styles.btnTxt}>SAVE</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {showStartTime && (
@@ -405,6 +472,7 @@ const styles = StyleSheet.create({
         width: width,
         height: height,
         backgroundColor: Colors.greyWeakColor,
+        flex: 1
     },
     header: {
         width: '100%',
@@ -439,7 +507,8 @@ const styles = StyleSheet.create({
 
     body: {
         backgroundColor: Colors.greyStrongColor,
-        height: '77%',
+        flexGrow: 1,
+        flex: 1
     },
     imgContainer: {
         width: '100%',
@@ -545,10 +614,9 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: Colors.whiteColor
     },
-
     btnContainer: {
         width: '100%',
-        height: '10%',
+        height: normalize(64, 'height'),
         backgroundColor: Colors.greyStrongColor,
         justifyContent: 'center',
         alignItems: 'center'

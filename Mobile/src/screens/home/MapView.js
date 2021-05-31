@@ -23,8 +23,7 @@ EntypoIcon.loadFont();
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import LinearGradient from 'react-native-linear-gradient';
 
-import { Colors, Images } from '@constants';
-import { Constants } from '../../constants';
+import { Colors, Images, Constants } from '@constants';
 
 export default function MapViewScreen({ navigation }) {
   const [business, setBusiness] = useState(Constants.business.filter(each => each.status === 'approved'));
@@ -50,8 +49,8 @@ export default function MapViewScreen({ navigation }) {
   }, [markerIdData])
 
   function getMarkerData () {
-    var businessResultData = [];
-    var markerIdData = [];
+    let businessResultData = [];
+    let markerIdData = [];
     business.forEach((each) => {
       if (each.location.latitude && each.location.longitude) {
         businessResultData.push(each);
@@ -63,7 +62,7 @@ export default function MapViewScreen({ navigation }) {
   }
 
   function onSearch(text){
-    var filtered = Constants.business.filter(each => (each.name?.toLowerCase().includes(text.toLowerCase()) || each.address?.toLowerCase().includes(text.toLowerCase())) && each.status === 'approved');
+    let filtered = Constants.business.filter(each => (each.name?.toLowerCase().includes(text.toLowerCase()) || each.address?.toLowerCase().includes(text.toLowerCase())) && each.status === 'approved');
     if (filtered) setBusiness(filtered);
     else setBusiness([]);
     // setKeyword(text);
@@ -103,12 +102,12 @@ export default function MapViewScreen({ navigation }) {
       </View>
       <View style={styles.mapContainer}>
         {
-          businessResultData[0]?.location.latitude && businessResultData[0]?.location.longitude &&
+          // businessResultData[0]?.location.latitude && businessResultData[0]?.location.longitude &&
           <MapView
             ref={mapRef}
             initialRegion={{
-              latitude: businessResultData[0].location.latitude,
-              longitude: businessResultData[0].location.longitude,
+              latitude: businessResultData[0]?.location.latitude??0,
+              longitude: businessResultData[0]?.location.longitude??0,
               latitudeDelta: 0.0922,
               longitudeDelta: 0.0421,
             }}

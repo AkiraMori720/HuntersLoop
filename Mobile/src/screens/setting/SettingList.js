@@ -18,9 +18,7 @@ import { RFPercentage } from 'react-native-responsive-fontsize';
 
 import EntypoIcon from 'react-native-vector-icons/Entypo';
 EntypoIcon.loadFont();
-import ToggleSwitch from 'toggle-switch-react-native';
-import Modal from 'react-native-modal';
-import StarRating from 'react-native-star-rating';
+
 import AsyncStorage from '@react-native-community/async-storage';
 import RateModal from 'react-native-store-rating';
 
@@ -219,6 +217,7 @@ export default function SettingListScreen({ navigation }) {
         storeRedirectThreshold={3}
         style={{
           paddingHorizontal: 30,
+          alignItems: 'center'
         }}
         onStarSelected={(e) => {
           console.log('change rating', e);
@@ -237,6 +236,9 @@ export default function SettingListScreen({ navigation }) {
             backgroundColr: 'transparent',
             borderColor: 'transparent',
             textTransform: 'uppercase'
+          },
+          buttons:{
+            alignSelf: 'center'
           }
         }}
         ratingProps={{

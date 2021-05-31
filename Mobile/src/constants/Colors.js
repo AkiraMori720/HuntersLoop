@@ -8,7 +8,8 @@ const Colors = {
   blueTitleColor: '#18a0fb',
   greenPriceColor: '#12ad3a',
   readMoreLessColor: '#bb8e0f',
-  logoutColor: '#cc2222'
+  logoutColor: '#cc2222',
+  riskColor: '#d56969'
 }
 
 export default Colors;
