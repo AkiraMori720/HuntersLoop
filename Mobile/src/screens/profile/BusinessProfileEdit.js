@@ -19,14 +19,14 @@ import { RFPercentage } from 'react-native-responsive-fontsize';
 
 import EntypoIcon from 'react-native-vector-icons/Entypo';
 EntypoIcon.loadFont();
-import DateTimePicker from '@react-native-community/datetimepicker';
 import Spinner from 'react-native-loading-spinner-overlay';
 import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
-import { Colors, Images, Constants } from '@constants';
+import { Colors, Constants } from '@constants';
 
 import { setData, uploadMedia } from '../../service/firebase';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import DatePicker from "../../components/DatePicker";
 
 export default function BusinessProfileEdit({ navigation, route }) {
     const [business, setBusiness] = useState();
@@ -34,9 +34,6 @@ export default function BusinessProfileEdit({ navigation, route }) {
     const [spinner, setSpinner] = useState(false);
     const [fromTime, setFromTime] = useState(new Date());
     const [toTime, setToTime] = useState(new Date());
-
-    const [showStartTime, setShowStartTime] = useState(false);
-    const [showEndTime, setShowEndTime] = useState(false);
 
     const [logoImagePath, setLogoImagePath] = useState();
     const [iconImagePath, setIconImagePath] = useState();
@@ -219,6 +216,9 @@ export default function BusinessProfileEdit({ navigation, route }) {
     }
 
     const onSave = async () => {
+        if(fromTime > toTime){
+            return Alert.alert('', 'Please select valid Operation Hours');
+        }
         setSpinner(true);
         if (business.img && business.img.substring(0,4) != 'http' && logoImagePath) {
             business.img = await uploadPhoto(logoImagePath, business.id + '/main');
@@ -388,13 +388,36 @@ export default function BusinessProfileEdit({ navigation, route }) {
                     ></TextInput>
 
                     <Text style={styles.logoTxt}>Operating Hours</Text>
-                    <View style={{flexDirection:'row'}}>
-                        <TouchableOpacity style={{flex:1, marginRight:2}} onPress={() => setShowStartTime(true)}>
-                            <Text style={[styles.inputBox, {padding: 10, flex:1}]}>{business.operatingHours.from} </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={{flex:1, marginLeft:2}} onPress={() => setShowEndTime(true)}>
-                            <Text style={[styles.inputBox, {padding: 10, flex:1}]}>{business.operatingHours.to} </Text>
-                        </TouchableOpacity>
+                    <View style={{flexDirection:'row', alignItems: 'center'}}>
+                        <DatePicker
+                            style={{flex: 1}}
+                            placeholder={'Select Time'}
+                            type={'time'}
+                            value={fromTime}
+                            action={({value}) => {
+                                if(!value){
+                                    return;
+                                }
+                                if (!business.operatingHours) { business.operatingHours = {} }
+                                business.operatingHours.from = getTimeString(value);
+                                setFromTime(value)
+                            }}
+                        />
+                        <Text style={{width:60, textAlign: 'center', color: 'white'}}>~</Text>
+                        <DatePicker
+                            style={{flex: 1}}
+                            placeholder={'Select Time'}
+                            type={'time'}
+                            value={toTime}
+                            action={({value}) => {
+                                if(!value){
+                                    return;
+                                }
+                                if (!business.operatingHours) { business.operatingHours = {} }
+                                business.operatingHours.to = getTimeString(value);
+                                setToTime(value)
+                            }}
+                        />
                     </View>
 
                     <Text style={styles.logoTxt}>Information</Text>
@@ -414,43 +437,6 @@ export default function BusinessProfileEdit({ navigation, route }) {
                     </TouchableOpacity>
                 </View>
             </View>
-
-            {showStartTime && (
-                <DateTimePicker
-                // testID="dateTimePicker"
-                value={fromTime}
-                mode={'time'}
-                is24Hour={true}
-                display="default"
-                onChange={(e, time) => {
-                    setShowStartTime(false);
-                    if(!time){
-                        return;
-                    }
-                    if (!business.operatingHours) { business.operatingHours = {} }
-                    business.operatingHours.from = getTimeString(time);
-                    setFromTime(time)
-                }}
-                />
-            )}
-            {showEndTime && (
-                <DateTimePicker
-                // testID="dateTimePicker"
-                value={toTime}
-                mode='time'
-                is24Hour={true}
-                display="default"
-                onChange={(e, time) => {
-                    setShowEndTime(false);
-                    if(!time){
-                        return;
-                    }
-                    if (!business.operatingHours) { business.operatingHours = {} }
-                    business.operatingHours.to = getTimeString(time);
-                    setToTime(time)
-                }}
-                />
-            )}
         </KeyboardAvoidingView>
     );
 }

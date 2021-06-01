@@ -28,25 +28,46 @@ const styles = StyleSheet.create({
 	}
 });
 
-export default function DatePicker({ placeholder, style, value, action, minimumDate }) {
+export default function DatePicker({ placeholder, style, type, value, action, minimumDate }) {
 	const [show, onShow] = useState(false);
 	const [currentDate, onChangeDate] = useState(value);
 
-	const onChange = ({ nativeEvent }, date) => {
+	const onChange = ({ nativeEvent: { timestamp } }, date) => {
 		if (Platform.OS === 'android') {
 			onShow(false);
 		}
-		if(!date){ return; }
-		const newDate = date;
-		onChangeDate(newDate);
-		action({ value: moment(newDate).format('YYYY-MM-DD') });
+		if(type === 'date'){
+			if(!date){ return; }
+			const newDate = date;
+			onChangeDate(newDate);
+			action({ value: moment(newDate).format('YYYY-MM-DD') });
+		} else {
+			console.log('time', timestamp);
+			const newDate = new Date(timestamp);
+			onChangeDate(newDate);
+			action({ value: newDate });
+		}
 	};
+
+
+	const getTimeString = (date) => {
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		let ampm = hours >= 12 ? 'PM' : 'AM';
+		hours = hours % 12;
+		hours = hours ? hours : 12; // the hour '0' should be '12'
+		minutes = minutes < 10 ? '0'+minutes : minutes;
+		let strTime = hours + ':' + minutes + ' ' + ampm;
+		return strTime;
+	}
+
 
 	if(Platform.OS === 'ios'){
 		return (
 			<DateTimePicker
 				style={style}
-				mode='date'
+				mode={type}
+				is24Hour={true}
 				display='default'
 				minimumDate={minimumDate}
 				value={value??new Date()}
@@ -61,14 +82,14 @@ export default function DatePicker({ placeholder, style, value, action, minimumD
 			style={styles.input}
 			onPress={() => onShow(!show)}
 		>
-			<Text>{value?moment(value).format('YYYY-MM-DD'):placeholder}</Text>
+			<Text>{value?(type==='date'?moment(value).format('YYYY-MM-DD'):getTimeString(value)):placeholder}</Text>
 		</TouchableOpacity>
 	);
 
 	const content = show ? (
 		<DateTimePicker
 			style={style}
-			mode='date'
+			mode={type}
 			display='default'
 			minimumDate={minimumDate}
 			value={currentDate??new Date()}

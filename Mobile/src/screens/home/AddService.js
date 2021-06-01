@@ -456,6 +456,7 @@ export default function AddService({ navigation, route }) {
                     <DatePicker
                         style={{flex: 1}}
                         placeholder={'Select Date'}
+                        type={'date'}
                         value={service.season.from?(new Date(moment(service.season.from))):null}
                         action={({value}) => {
                             service.season.from = value;
@@ -467,6 +468,7 @@ export default function AddService({ navigation, route }) {
                     <DatePicker
                         style={{flex: 1}}
                         placeholder={'Select Date'}
+                        type={'date'}
                         value={service.season.to?(new Date(moment(service.season.to))):null}
                         minimumDate={new Date()}
                         action={({value}) => {
