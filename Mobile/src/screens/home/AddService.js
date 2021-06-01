@@ -35,9 +35,10 @@ import RNDateTimePicker from '@react-native-community/datetimepicker';
 import {check, PERMISSIONS, RESULTS} from "react-native-permissions";
 import moment from "moment";
 import DropDownPicker from "react-native-dropdown-picker";
+import DatePicker from "../../components/DatePicker";
 
 export default function AddService({ navigation, route }) {
-    const [service, setService] = useState({season:{from: moment().format('YYYY-MM-DD'), to: moment().format('YYYY-MM-DD')}, detailImgs:[]});
+    const [service, setService] = useState({season:{}, detailImgs:[]});
     const [refresh, setRefresh] = useState(true);
 
     const [mainImagePath, setmainImagePath] = useState();
@@ -313,61 +314,61 @@ export default function AddService({ navigation, route }) {
             </View>
 
             <ScrollView style={[styles.body]} keyboardShouldPersistTaps='always'>
-                    { Platform.OS === 'android' ?
-                    <View style={[styles.inputBox, { paddingLeft: 5, justifyContent: 'center' }]}>
-                        <RNPickerSelect
-                            items={
-                                Constants.categories.map(category => ({
-                                        label: category.name.toUpperCase(),
-                                        value: category.id
-                                    })
-                                )
+                { Platform.OS === 'android' ?
+                <View style={[styles.inputBox, { paddingLeft: 5, justifyContent: 'center' }]}>
+                    <RNPickerSelect
+                        items={
+                            Constants.categories.map(category => ({
+                                    label: category.name.toUpperCase(),
+                                    value: category.id
+                                })
+                            )
+                        }
+                        useNativeAndroidPickerStyle={false}
+                        onValueChange={(value) => updateServiceProperty('cid', value) }
+                        value={service.cid}
+                        placeholder={{}}
+                        style={{
+                            inputAndroid: {
+                                color: Colors.blackColor
+                            },
+                            inputIOS: {
+                                fontSize: RFPercentage(2.5),
+                                color: Colors.blackColor,
+                                paddingVertical: 8
                             }
-                            useNativeAndroidPickerStyle={false}
-                            onValueChange={(value) => updateServiceProperty('cid', value) }
-                            value={service.cid}
-                            placeholder={{}}
-                            style={{
-                                inputAndroid: {
-                                    color: Colors.blackColor
-                                },
-                                inputIOS: {
-                                    fontSize: RFPercentage(2.5),
-                                    color: Colors.blackColor,
-                                    paddingVertical: 8
-                                }
-                            }}
-                        />
-                    </View>
-                    :
-                    <View style={[styles.inputBox, { paddingLeft: 0, justifyContent: 'center', zIndex: 10 }]}>
-                        <DropDownPicker
-                            items={
-                                Constants.categories.map(category => ({
-                                        label: category.name.toUpperCase(),
-                                        value: category.id
-                                    })
-                                )
-                            }
-                            containerStyle={{
-                                height: '100%'
-                            }}
-                            style={{
-                                backgroundColor: Colors.greyWeakColor
-                            }}
-                            itemStyle={{
-                                justifyContent: 'flex-start',
-                            }}
-                            labelStyle={{
-                                fontSize: RFPercentage(2.5)
-                            }}
-                            dropDownStyle={{
-                                backgroundColor: Colors.greyWeakColor,
-                            }}
-                            onChangeItem={item => updateServiceProperty('cid', item.value)}
-                        />
-                    </View>
-                    }
+                        }}
+                    />
+                </View>
+                :
+                <View style={[styles.inputBox, { paddingLeft: 0, justifyContent: 'center', zIndex: 10 }]}>
+                    <DropDownPicker
+                        items={
+                            Constants.categories.map(category => ({
+                                    label: category.name.toUpperCase(),
+                                    value: category.id
+                                })
+                            )
+                        }
+                        containerStyle={{
+                            height: '100%'
+                        }}
+                        style={{
+                            backgroundColor: Colors.greyWeakColor
+                        }}
+                        itemStyle={{
+                            justifyContent: 'flex-start',
+                        }}
+                        labelStyle={{
+                            fontSize: RFPercentage(2.5)
+                        }}
+                        dropDownStyle={{
+                            backgroundColor: Colors.greyWeakColor,
+                        }}
+                        onChangeItem={item => updateServiceProperty('cid', item.value)}
+                    />
+                </View>
+                }
 
                 <TextInput
                     style={styles.inputBox}
@@ -446,28 +447,49 @@ export default function AddService({ navigation, route }) {
                 
                 <Text style={[styles.logoTxt, {marginTop:15}]}>Hunting Season</Text>
                 <View style={{flexDirection:'row', marginTop: normalize(10, 'height'), alignItems:'center' }} >
-                    <RNDateTimePicker
-                        style={{flex:1}}
-                        value={service.season.from?(new Date(moment(service.season.from))):(new Date())}
-                        mode="date"
-                        onChange={(event, date) => {
-                            service.season.from = moment(date).format("YYYY-MM-DD");
+                    {/*<RNDateTimePicker*/}
+                    {/*    style={{flex:1}}*/}
+                    {/*    value={service.season.from?(new Date(moment(service.season.from))):(new Date())}*/}
+                    {/*    mode="date"*/}
+                    {/*    onChange={(event, date) => {*/}
+                    {/*        service.season.from = moment(date).format("YYYY-MM-DD");*/}
+                    {/*        setService(service);*/}
+                    {/*        setRefresh(!refresh);*/}
+                    {/*    }}*/}
+                    {/*/>*/}
+                    <DatePicker
+                        style={{flex: 1}}
+                        placeholder={'Select Date'}
+                        value={service.season.from?(new Date(moment(service.season.from))):null}
+                        action={({value}) => {
+                            service.season.from = value;
                             setService(service);
                             setRefresh(!refresh);
                         }}
                     />
-                    <Text style={{width:40}}>~</Text>
-                    <RNDateTimePicker
-                        style={{flex:1}}
-                        value={service.season.to?(new Date(moment(service.season.to))):(new Date())}
-                        mode="date"
+                    <Text style={{width:60, textAlign: 'center'}}>~</Text>
+                    <DatePicker
+                        style={{flex: 1}}
+                        placeholder={'Select Date'}
+                        value={service.season.to?(new Date(moment(service.season.to))):null}
                         minimumDate={new Date()}
-                        onChange={(event, date) => {
-                            service.season.to = moment(date).format("YYYY-MM-DD");
+                        action={({value}) => {
+                            service.season.to = value;
                             setService(service);
                             setRefresh(!refresh);
                         }}
                     />
+                    {/*<RNDateTimePicker*/}
+                    {/*    style={{flex:1}}*/}
+                    {/*    value={service.season.to?(new Date(moment(service.season.to))):(new Date())}*/}
+                    {/*    mode="date"*/}
+                    {/*    minimumDate={new Date()}*/}
+                    {/*    onChange={(event, date) => {*/}
+                    {/*        service.season.to = moment(date).format("YYYY-MM-DD");*/}
+                    {/*        setService(service);*/}
+                    {/*        setRefresh(!refresh);*/}
+                    {/*    }}*/}
+                    {/*/>*/}
                 </View>
 
                 <Text style={[styles.logoTxt, {marginTop:15}]}>Service Image</Text>

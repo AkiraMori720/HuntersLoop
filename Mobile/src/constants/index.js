@@ -18,5 +18,6 @@ export const Constants = {
     longitude: ''
   },
   refreshFlag: false,
-  backRoute: ''
+  backRoute: '',
+  notification: null
 }

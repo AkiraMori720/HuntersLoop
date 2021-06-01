@@ -225,7 +225,7 @@ class BusinessAccounts extends Component {
                           <div className="d-flex justify-content-end align-items-center" style={{ marginTop: -18 }}>
                             <RatingTooltip
                               max={5}
-                              defaultRating={each.rating}
+                              defaultRating={each.rating??0}
                               disabled={true}
                               // onChange={rate => {
                               //   var hunt = { ...each };
@@ -246,7 +246,7 @@ class BusinessAccounts extends Component {
                                 />
                               }
                             />
-                            <span className="mt-3" style={{ marginLeft: -10 }}>{each.rating.toFixed(1)}</span>
+                            <span className="mt-3" style={{ marginLeft: -10 }}>{(each.rating?.toFixed(1))??0}</span>
                           </div>
                         </CardTitle>
                       </div>

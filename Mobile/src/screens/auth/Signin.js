@@ -29,7 +29,7 @@ import CheckBox from '@react-native-community/checkbox';
 import Spinner from 'react-native-loading-spinner-overlay';
 
 import { Colors, Images, Constants } from '@constants';
-import { appleSignin, googleSignin, facebookSignin, signin, } from '../../service/firebase';
+import {appleSignin, googleSignin, facebookSignin, signin, setFcmToken,} from '../../service/firebase';
 import { getUserSocialRegistered, createUser, checkInternet } from '../../service/firebase';
 
 export default function SigninScreen({ navigation }) {
@@ -132,10 +132,11 @@ export default function SigninScreen({ navigation }) {
     }
 
     await createUser(user)
-      .then(() => {
+      .then(async () => {
         console.log('create user success');
         Constants.user = user;
         AsyncStorage.setItem('user', JSON.stringify(user));
+        await setFcmToken(Constants.user.id);
         navigation.navigate("Home", { screen: 'BusinessList' });
       })
       .catch((err) => {

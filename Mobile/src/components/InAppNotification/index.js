@@ -2,7 +2,7 @@ import React, { memo, useEffect } from 'react';
 import { NotifierRoot, Notifier, Easing } from 'react-native-notifier';
 
 import NotifierComponent from './NotifierComponent';
-import EventEmitter from '../../common/events';
+import EventEmitter from '../../service/events';
 
 export const INAPP_NOTIFICATION_EMITTER = 'NotificationInApp';
 export const INAPP_NOTIFICATION_DURATION = 15000;

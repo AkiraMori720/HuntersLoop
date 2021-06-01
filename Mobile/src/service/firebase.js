@@ -12,6 +12,9 @@ import appleAuth, {
 import {LoginManager, AccessToken} from 'react-native-fbsdk';
 
 import NetInfo from '@react-native-community/netinfo';
+import messaging from "@react-native-firebase/messaging";
+
+const SERVER_KEY = 'AAAAnlcgOkE:APA91bHumpch-DGOZpreocU_1PSlT7P80NZkNsH_zqLtsxW9aZW_qnlSoK4TcfL1BQvJeblUMqS7lGv-7582rUZlenFdzEUAlwjvKbPFG0RwOeZqqLGS-D-A4e6v2_1ut8a48n7mw4VD';
 
 export const checkInternet = async () => {
   return NetInfo.fetch().then(state => {    
@@ -306,3 +309,46 @@ export const uploadMedia = (folder, name, path) => {
 }
 
 
+export const setFcmToken = async (userid) => {
+  const authStatus = await messaging().requestPermission();
+  const enabled = authStatus === messaging.AuthorizationStatus.AUTHORIZED || authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  if (enabled) {
+    const fcmToken = await messaging().getToken();
+    if (fcmToken) {
+      console.log("Your Firebase Token is:", fcmToken);
+      return setData('users', 'update', { id: userid, fcmToken: fcmToken });
+    }
+  }
+  console.log("Failed", "No token received");
+  return null
+}
+
+export const sendNotifications = (tokens, title, content, data) => {
+  for(let i=0; i<tokens.length; i++){
+    let params = {
+      to:tokens[i],
+      data,
+      notification:{
+        body:content,
+        title:title
+      }
+    };
+
+    let options = {
+      method: 'POST',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+        'Authorization': `key=${SERVER_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(params)
+    };
+    console.log('send notification: ', options);
+    try{
+      fetch('https://fcm.googleapis.com/fcm/send', options);
+    } catch (e) {
+      console.log('Send Notification Error:', e);
+    }
+  }
+  return true;
+}

@@ -24,7 +24,7 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { Colors, Images, Constants } from '@constants';
-import { signup, createUser, setData, checkInternet } from '../../service/firebase';
+import {signup, createUser, setData, checkInternet, setFcmToken} from '../../service/firebase';
 
 export default function SignupScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -184,10 +184,11 @@ export default function SignupScreen({ navigation }) {
               'Account created!',
               [
                 {
-                  text: "OK", onPress: () => {
+                  text: "OK", onPress: async () => {
                     setSpinner(false);
                     Constants.user = user;
                     AsyncStorage.setItem('user', JSON.stringify(user));
+                    await setFcmToken(Constants.user.id);
                     navigation.navigate("Home", { screen: 'BusinessList' });
                   }
                 }

@@ -29,13 +29,13 @@ import { Colors, Images, Constants } from '@constants';
 import ServiceItem from '../../components/ServiceItem';
 import ReviewModal from '../../components/ReviewModal';
 
-import { setData, checkInternet } from '../../service/firebase';
+import {setData, checkInternet, sendNotifications} from '../../service/firebase';
 
 export default function ServiceListScreen({ navigation, route }) {
   const businessItem = route.params.businessItem;
   const [services, setServices] = useState(Constants.services.filter(each => each.bid == route.params.businessItem.id));
   const [refresh, setRefresh] = useState(false);
-
+console.log('services', services, route.params.businessItem.id);
   const [reviewModal, setReviewModal] = useState(false);
   const [spinner, setSpinner] = useState(false);
 
@@ -88,14 +88,24 @@ export default function ServiceListScreen({ navigation, route }) {
       }
     }
 
-    setData('reviews', action, newItem)
+    let businessUser = Constants.user.find( u => u.bid === businessItem.id);
+
+    await setData('reviews', action, newItem)
       .then(() => {
         console.log('review success');
         Alert.alert(
           "Sent Successfully!",
           "After acceptance, this review will be published",
           [
-            { text: "OK", onPress: () => { setSpinner(false); } }
+            { text: "OK", onPress: async () => {
+              if(businessUser && businessUser.fcmToken){
+                sendNotifications([businessUser.fcmToken],
+                    'Review',
+                    `${Constants.user?.name} gave review for your service`,
+                    { action: 'review', uid: Constants.user?.id});
+              }
+              setSpinner(false);
+            } }
           ],
         );
       })

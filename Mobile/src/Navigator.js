@@ -1,4 +1,5 @@
 import React from 'react';
+import Navigation, {getActiveRouteName} from './service/navigation';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -175,8 +176,21 @@ function SettingStack (){
 }
 
 const App = React.memo(() => {
+  React.useEffect(() => {
+    const state = Navigation.navigationRef.current?.getRootState();
+    Navigation.routeNameRef.current = getActiveRouteName(state);
+  }, []);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer
+        ref={Navigation.navigationRef}
+        onStateChange={(state) => {
+          const previousRouteName = Navigation.routeNameRef.current;
+          const currentRouteName = getActiveRouteName(state);
+          if (previousRouteName !== currentRouteName) {
+          }
+          Navigation.routeNameRef.current = currentRouteName;
+        }}>
       <Stack.Navigator headerMode='none' initialRouteName="Splash" screenOptions={{ cardStyle: {backgroundColor: Colors.blackColor }}}>
         <Stack.Screen name='Splash' component={SplashScreen} />
         <Stack.Screen name='Auth' component={AuthStack} />

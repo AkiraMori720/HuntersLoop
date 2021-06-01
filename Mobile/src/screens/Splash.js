@@ -30,7 +30,7 @@ import {
 import Spinner from 'react-native-loading-spinner-overlay';
 
 import { Colors, Images, Constants } from '@constants';
-import { getUser, getData, checkInternet } from '../service/firebase';
+import {getUser, getData, checkInternet, setFcmToken} from '../service/firebase';
 
 export default function SplashScreen({ navigation }) {
 
@@ -175,17 +175,22 @@ export default function SplashScreen({ navigation }) {
 
   const goScreen = () => {
     AsyncStorage.getItem('user')
-      .then((user) => {
+      .then(async (user) => {
         // console.log('user', user)
         if (user) {
           Constants.user = JSON.parse(user);
           setSpinner(false);
+          await setFcmToken(Constants.user.id);
           navigation.navigate("Home", { screen: 'BusinessList' });
+          if(Constants.notification){
+            setTimeout(() => navigation.navigate("Home", { screen: '' }, 1000));
+          }
         }
         else {
           // navigation.navigate('Auth')
           setSpinner(false);
           navigation.navigate("Home", { screen: 'BusinessList' });
+          Constants.notification = null;
         }
       })
   }

@@ -1,31 +1,22 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import PropTypes from 'prop-types';
+import {StyleSheet, Text, TouchableOpacity, Platform} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import Touchable from 'react-native-platform-touchable';
-import { BLOCK_CONTEXT } from '@rocket.chat/ui-kit';
 import moment from 'moment';
-
-import Button from '../Button';
-import { textParser } from './utils';
-import { themes } from '../../constants/colors';
-
-import sharedStyles from '../../views/Styles';
-import { CustomIcon } from '../../lib/Icons';
-import { isAndroid } from '../../utils/deviceInfo';
-import ActivityIndicator from '../ActivityIndicator';
+import normalize from "react-native-normalize";
+import {RFPercentage} from "react-native-responsive-fontsize";
+import { Colors } from '@constants';
 
 const styles = StyleSheet.create({
 	input: {
-		height: 48,
-		paddingLeft: 16,
-		borderWidth: StyleSheet.hairlineWidth,
-		borderRadius: 2,
+		height: normalize(40, 'height'),
+		backgroundColor: Colors.greyWeakColor,
+		fontSize: RFPercentage(2.5),
+		borderRadius: normalize(8),
 		alignItems: 'center',
-		flexDirection: 'row'
+		justifyContent: 'center',
+		width: normalize(120, 'width')
 	},
 	inputText: {
-		...sharedStyles.textRegular,
 		fontSize: 14
 	},
 	icon: {
@@ -37,64 +28,38 @@ const styles = StyleSheet.create({
 	}
 });
 
-export const DatePicker = ({
-	element, language, action, context, theme, loading, value, error
-}) => {
+export default function DatePicker({ placeholder, style, value, action, minimumDate }) {
 	const [show, onShow] = useState(false);
-	const { initial_date, placeholder } = element;
-	const [currentDate, onChangeDate] = useState(new Date(initial_date || value));
+	const [currentDate, onChangeDate] = useState(value);
 
-	const onChange = ({ nativeEvent: { timestamp } }, date) => {
-		const newDate = date || new Date(timestamp);
-		onChangeDate(newDate);
-		action({ value: moment(newDate).format('YYYY-MM-DD') });
-		if (isAndroid) {
+	const onChange = ({ nativeEvent }, date) => {
+		if (Platform.OS === 'android') {
 			onShow(false);
 		}
+		if(!date){ return; }
+		const newDate = date;
+		onChangeDate(newDate);
+		action({ value: moment(newDate).format('YYYY-MM-DD') });
 	};
 
 	let button = (
-		<Button
-			title={textParser([placeholder])}
+		<TouchableOpacity
+			style={styles.input}
 			onPress={() => onShow(!show)}
-			loading={loading}
-			theme={theme}
-		/>
+		>
+			<Text>{value?moment(value).format('YYYY-MM-DD'):placeholder}</Text>
+		</TouchableOpacity>
 	);
-
-	if (context === BLOCK_CONTEXT.FORM) {
-		button = (
-			<Touchable
-				onPress={() => onShow(!show)}
-				style={{ backgroundColor: themes[theme].backgroundColor }}
-				background={Touchable.Ripple(themes[theme].bannerBackground)}
-			>
-				<View style={[styles.input, { borderColor: error ? themes[theme].dangerColor : themes[theme].separatorColor }]}>
-					<Text
-						style={[
-							styles.inputText,
-							{ color: error ? themes[theme].dangerColor : themes[theme].titleText }
-						]}
-					>
-						{currentDate.toLocaleDateString(language)}
-					</Text>
-					{
-						loading
-							? <ActivityIndicator style={[styles.loading, styles.icon]} />
-							: <CustomIcon name='calendar' size={20} color={error ? themes[theme].dangerColor : themes[theme].auxiliaryText} style={styles.icon} />
-					}
-				</View>
-			</Touchable>
-		);
-	}
 
 	const content = show ? (
 		<DateTimePicker
+			style={style}
 			mode='date'
 			display='default'
-			value={currentDate}
+			minimumDate={minimumDate}
+			value={currentDate??new Date()}
 			onChange={onChange}
-			textColor={themes[theme].titleText}
+			textColor={'black'}
 		/>
 	) : null;
 
@@ -104,14 +69,4 @@ export const DatePicker = ({
 			{content}
 		</>
 	);
-};
-DatePicker.propTypes = {
-	element: PropTypes.object,
-	language: PropTypes.string,
-	action: PropTypes.func,
-	context: PropTypes.number,
-	loading: PropTypes.bool,
-	theme: PropTypes.string,
-	value: PropTypes.string,
-	error: PropTypes.string
 };

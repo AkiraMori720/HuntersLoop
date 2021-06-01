@@ -2,8 +2,6 @@ import React from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {Notifier} from 'react-native-notifier';
-import store from "../../store/createStore";
-import {notificationOpen} from "../../actions/notification";
 
 const AVATAR_SIZE = 48;
 const BUTTON_HIT_SLOP = {
@@ -62,7 +60,7 @@ const NotifierComponent = React.memo(({
 			return;
 		}
 
-		store.dispatch(notificationOpen(data));
+		// TODO
 		hideNotification();
 	};
 
