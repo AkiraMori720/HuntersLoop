@@ -11,7 +11,7 @@ import {
   Text,
   ImageBackground,
   PermissionsAndroid,
-  Alert
+  Alert, Linking
 } from 'react-native';
 import normalize from 'react-native-normalize';
 import { RFPercentage } from 'react-native-responsive-fontsize';
@@ -31,6 +31,8 @@ import Spinner from 'react-native-loading-spinner-overlay';
 
 import { Colors, Images, Constants } from '@constants';
 import {getUser, getData, checkInternet, setFcmToken} from '../service/firebase';
+import {REVIEW_URL} from "../urls";
+import Navigation from "../service/navigation";
 
 export default function SplashScreen({ navigation }) {
 
@@ -183,7 +185,18 @@ export default function SplashScreen({ navigation }) {
           await setFcmToken(Constants.user.id);
           navigation.navigate("Home", { screen: 'BusinessList' });
           if(Constants.notification){
-            setTimeout(() => navigation.navigate("Home", { screen: '' }, 1000));
+            const { uid, action } = Constants.notification;
+            if (!uid) {
+              return;
+            }
+            switch (action){
+              case 'review':
+                Linking.openURL(REVIEW_URL);
+                break;
+              case 'message':
+                setTimeout(() => Navigation.navigate("Home", { screen: '' }, 1000));
+                break;
+            }
           }
         }
         else {

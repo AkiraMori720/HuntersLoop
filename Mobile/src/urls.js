@@ -1,0 +1,1 @@
+export const REVIEW_URL = 'https://localhost:3000/profile';

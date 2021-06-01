@@ -25,7 +25,7 @@ const InAppNotification = memo(() => {
 		const { notification, data } = message;
 		// const state = Navigation.navigationRef.current?.getRootState();
 		// const route = getActiveRoute(state);
-		if (data.roomid) {
+		if (data.uid) {
 			Notifier.showNotification({
 				showEasing: Easing.inOut(Easing.quad),
 				Component: NotifierComponent,

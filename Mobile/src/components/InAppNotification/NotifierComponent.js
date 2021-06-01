@@ -1,7 +1,8 @@
 import React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Linking, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {Notifier} from 'react-native-notifier';
+import {REVIEW_URL} from "../../urls";
 
 const AVATAR_SIZE = 48;
 const BUTTON_HIT_SLOP = {
@@ -55,11 +56,15 @@ const NotifierComponent = React.memo(({
 	const { body: text, title } = notification;
 
 	const onPress = () => {
-		const { roomid } = data;
-		if (!roomid) {
+		const { uid, action } = data;
+		if (!uid) {
 			return;
 		}
-
+		switch (action){
+			case 'review':
+				Linking.openURL(REVIEW_URL);
+				break;
+		}
 		// TODO
 		hideNotification();
 	};

@@ -188,7 +188,7 @@ export default function SettingListScreen({ navigation }) {
         Constants.user && Constants.user.role != "business" &&
         <View style={styles.itemLine}>
           <View style={styles.iconPart}><EntypoIcon name="suitcase" style={styles.iconLabel}></EntypoIcon></View>
-          <TouchableOpacity style={styles.titlePart} onPress={() => { Constants.refreshFlag = true; navigation.navigate('Request') }}><Text style={styles.itemTxt}>{'Constants.user?.bid'?'Update a Business Account':'Create a Business Account'}</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.titlePart} onPress={() => { Constants.refreshFlag = true; navigation.navigate('Request') }}><Text style={styles.itemTxt}>{Constants.user?.bid?'Update a Business Account':'Create a Business Account'}</Text></TouchableOpacity>
           <View style={styles.iconPart}><EntypoIcon name="chevron-thin-right" style={styles.itemTxt}></EntypoIcon></View>
         </View>
       }

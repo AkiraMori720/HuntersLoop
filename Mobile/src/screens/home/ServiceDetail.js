@@ -63,13 +63,7 @@ export default function ServiceDetailScreen({ navigation, route }) {
   const [activeSections, setActiveSections] = useState([]);
   const [hunter, setHunter] = useState();
 
-  useEffect(() => {
-    makeDetailImgs();
-    getReviews();
-    getHunter();
-  }, []);
-
-  makeDetailImgs = () => {
+  const makeDetailImgs = () => {
     var imgs = [];
     serviceItem.detailImgs.forEach(each => {
       imgs.push({
@@ -84,7 +78,7 @@ export default function ServiceDetailScreen({ navigation, route }) {
     setDetailImgs(imgs);
   }
 
-  getReviews = () => {
+  const getReviews = () => {
     var reviews = Constants.reviews.filter(each => each.sid == serviceItem.id);
     var nReviews = [];
     reviews.forEach((each) => {
@@ -100,7 +94,7 @@ export default function ServiceDetailScreen({ navigation, route }) {
     setReviews(nReviews);
   }
 
-  onBack = () => {
+  const onBack = () => {
     if (page === 'hunt') {
       navigation.goBack(null)
     }
@@ -109,16 +103,16 @@ export default function ServiceDetailScreen({ navigation, route }) {
     }
   }
 
-  toggleDetailImgView = (index) => {
+  const toggleDetailImgView = (index) => {
     setDetailImgView(!detailImgView);
     setDetailImgIndex(index);
   }
 
-  toggleReviewModal = () => {
+  const toggleReviewModal = () => {
     setReviewModal(!reviewModal)
   }
 
-  confirmReviewService = (rating, review) => {
+  const confirmReviewService = (rating, review) => {
     setReviewModal(!reviewModal);
     setSpinner(true);
 
@@ -172,16 +166,24 @@ export default function ServiceDetailScreen({ navigation, route }) {
       })
   }
 
-  getReviewLength = (serviceItem) => {
+  const getReviewLength = (serviceItem) => {
     var reviews = Constants.reviews.filter(each => each.sid == serviceItem.id);
     return reviews.length;
   }
 
-  getHunter = () => {
+  const getHunter = () => {
     var business = Constants.business.find(each => each.id == serviceItem.bid);
     var user = Constants.users.find(each => each.bid == business.id);
     if (user) setHunter(user);
   }
+
+
+  useEffect(() => {
+    makeDetailImgs();
+    getReviews();
+    getHunter();
+  }, []);
+
 
   function showAlert() {
     Alert.alert('You should login first!', 'Going to login now?',
@@ -196,7 +198,7 @@ export default function ServiceDetailScreen({ navigation, route }) {
     )
   }
 
-  renderCollapseHeader = (section) => {
+  const renderCollapseHeader = (section) => {
     var isActive = activeSections.includes(section.id);
     return (
       <View style={styles.collapseHeader}>
@@ -211,7 +213,7 @@ export default function ServiceDetailScreen({ navigation, route }) {
     )
   }
 
-  renderCollapseContent = (section) => {
+  const renderCollapseContent = (section) => {
     return (
       <View style={styles.collapseContent}>
         {

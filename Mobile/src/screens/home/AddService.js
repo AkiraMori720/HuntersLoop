@@ -133,8 +133,8 @@ export default function AddService({ navigation, route }) {
                     let new_paths = imagesPath;
                     new_paths[index] = response.uri;
                     setImagesPath(new_paths);
-                    
                 }
+                console.log('response', response);
                 // setService(service);
                 setRefresh(!refresh)
             }
@@ -204,7 +204,7 @@ export default function AddService({ navigation, route }) {
         return new Promise(async (resolve, reject) => {
             let platformPhotoLocalPath = Platform.OS === "android" ? localPath : localPath.replace("file://", "")
             let newPath = '';
-            await ImageResizer.createResizedImage(platformPhotoLocalPath, 400, 200, 'PNG', 50, 0, null)
+            await ImageResizer.createResizedImage(platformPhotoLocalPath, 800, 400, 'PNG', 100, 0, null)
                 .then(response => {
                     newPath = response.uri;
                     console.log({newPath})
@@ -212,19 +212,23 @@ export default function AddService({ navigation, route }) {
                 .catch(err => {
                     console.log('image resizer error', err);
                 });
-                console.log(platformPhotoLocalPath);
-
-            await uploadMedia('services', fbPath, platformPhotoLocalPath)
-                .then((downloadURL) => {
-                    if (!downloadURL) return;
-                    // console.log('downloadURL', downloadURL)
-                    // setImgDownloadUrl(downloadURL);
-                    resolve(downloadURL);
-                })
-                .catch((err) => {
-                    console.log('upload photo error', err);
-                    reject(err);
-                })
+            console.log(platformPhotoLocalPath);
+            try{
+                await uploadMedia('services', fbPath, newPath)
+                    .then((downloadURL) => {
+                        if (!downloadURL) return;
+                        // console.log('downloadURL', downloadURL)
+                        // setImgDownloadUrl(downloadURL);
+                        resolve(downloadURL);
+                    })
+                    .catch((err) => {
+                        console.log('upload photo error', err);
+                        reject(err);
+                    })
+            } catch(err){
+                console.log('upload photo error', err);
+                reject(err);
+            }
         })
     }
 
@@ -327,7 +331,10 @@ export default function AddService({ navigation, route }) {
                         useNativeAndroidPickerStyle={false}
                         onValueChange={(value) => updateServiceProperty('cid', value) }
                         value={service.cid}
-                        placeholder={{}}
+                        placeholder={{
+                            label: 'Select Category',
+                            value: null
+                        }}
                         style={{
                             inputAndroid: {
                                 color: Colors.blackColor
@@ -369,7 +376,6 @@ export default function AddService({ navigation, route }) {
                     />
                 </View>
                 }
-
                 <TextInput
                     style={styles.inputBox}
                     autoCapitalize='none'
@@ -447,16 +453,6 @@ export default function AddService({ navigation, route }) {
                 
                 <Text style={[styles.logoTxt, {marginTop:15}]}>Hunting Season</Text>
                 <View style={{flexDirection:'row', marginTop: normalize(10, 'height'), alignItems:'center' }} >
-                    {/*<RNDateTimePicker*/}
-                    {/*    style={{flex:1}}*/}
-                    {/*    value={service.season.from?(new Date(moment(service.season.from))):(new Date())}*/}
-                    {/*    mode="date"*/}
-                    {/*    onChange={(event, date) => {*/}
-                    {/*        service.season.from = moment(date).format("YYYY-MM-DD");*/}
-                    {/*        setService(service);*/}
-                    {/*        setRefresh(!refresh);*/}
-                    {/*    }}*/}
-                    {/*/>*/}
                     <DatePicker
                         style={{flex: 1}}
                         placeholder={'Select Date'}
@@ -479,17 +475,6 @@ export default function AddService({ navigation, route }) {
                             setRefresh(!refresh);
                         }}
                     />
-                    {/*<RNDateTimePicker*/}
-                    {/*    style={{flex:1}}*/}
-                    {/*    value={service.season.to?(new Date(moment(service.season.to))):(new Date())}*/}
-                    {/*    mode="date"*/}
-                    {/*    minimumDate={new Date()}*/}
-                    {/*    onChange={(event, date) => {*/}
-                    {/*        service.season.to = moment(date).format("YYYY-MM-DD");*/}
-                    {/*        setService(service);*/}
-                    {/*        setRefresh(!refresh);*/}
-                    {/*    }}*/}
-                    {/*/>*/}
                 </View>
 
                 <Text style={[styles.logoTxt, {marginTop:15}]}>Service Image</Text>

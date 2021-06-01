@@ -511,7 +511,10 @@ export default function RequestScreen({ navigation }) {
                 setMembershipId(value);
               }}
               value={membershipId}
-              placeholder={{}}
+              placeholder={{
+                label: 'Please Select',
+                value: null
+              }}
               style={{
                 inputAndroid: {
                   color: Colors.blackColor

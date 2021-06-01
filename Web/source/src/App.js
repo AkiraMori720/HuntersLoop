@@ -13,11 +13,22 @@ import MainLayout from "./components/Layout/MainLayout/";
 import NonAuthLayout from "./components/Layout/NonAuthLayout";
 
 import "./assets/scss/theme.scss";
+import {store} from "./store";
+import {loginUser} from "./store/auth/actions";
 
 class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {};
+		this.init();
+	}
+
+	init = () => {
+		let storeUser = this.props.auth.user;
+		let storageUser = JSON.parse(localStorage.getItem("authUser"));
+		if(!storeUser || storageUser){
+			store.dispatch(loginUser({email: storageUser.email, password: storageUser.pwd}));
+		}
 	}
 
 	render() {

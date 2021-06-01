@@ -16,9 +16,13 @@ const login = (state = initialState, action) => {
       break;
 
     case LOGIN_USER_SUCCESS:
+      let user = action.payload;
+      if(user.role === 'user' && user.bid){
+        user.role = 'business';
+      }
       state = {
         ...state,
-        user: action.payload,
+        user: user,
         loading: false
       }
       break;

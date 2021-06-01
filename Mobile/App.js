@@ -6,6 +6,8 @@ import InAppNotification, {INAPP_NOTIFICATION_EMITTER} from "./src/components/In
 import EventEmitter from './src/service/events';
 import { Colors, Images, Constants } from '@constants';
 import Navigation from './src/service/navigation';
+import {Linking} from "react-native";
+import {REVIEW_URL} from "./src/urls";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -28,8 +30,18 @@ export default class App extends React.Component {
           remoteMessage.data,
       );
       if(Constants.user){
-        const notification = (remoteMessage.data);
-        setTimeout(() => Navigation.navigate("Home", { screen: '' }, 1000));
+        const { uid, action } = remoteMessage.data;
+        if (!uid) {
+          return;
+        }
+        switch (action){
+          case 'review':
+            Linking.openURL(REVIEW_URL);
+            break;
+          case 'message':
+            setTimeout(() => Navigation.navigate("Home", { screen: '' }, 1000));
+            break;
+        }
       }
     });
 
@@ -49,7 +61,8 @@ export default class App extends React.Component {
   render = () => {
     return (
       <>
-      <Navigator />
+        <Navigator />
+        <InAppNotification/>
       </>
     );
   }

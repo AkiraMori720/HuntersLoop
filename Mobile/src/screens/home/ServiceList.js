@@ -88,7 +88,7 @@ console.log('services', services, route.params.businessItem.id);
       }
     }
 
-    let businessUser = Constants.user.find( u => u.bid === businessItem.id);
+    let businessUser = Constants.users.find( u => u.bid === businessItem.id);
 
     await setData('reviews', action, newItem)
       .then(() => {
@@ -101,7 +101,7 @@ console.log('services', services, route.params.businessItem.id);
               if(businessUser && businessUser.fcmToken){
                 sendNotifications([businessUser.fcmToken],
                     'Review',
-                    `${Constants.user?.name} gave review for your service`,
+                    (Constants.user?.name)??'User' + ' gave review for your service',
                     { action: 'review', uid: Constants.user?.id});
               }
               setSpinner(false);

@@ -174,8 +174,8 @@ export default function SigninScreen({ navigation }) {
           }
 
         await signin(email, pwd)
-          .then((user) => {
-            //console.log('signin success', user);
+          .then(async (user) => {
+            console.log('signin success', user);
 
             if (!user.active) {
               Alert.alert(
@@ -189,8 +189,8 @@ export default function SigninScreen({ navigation }) {
             }
 
             setSpinner(false);
-
             Constants.user = user;
+            await setFcmToken(Constants.user.id);
             AsyncStorage.setItem('user', JSON.stringify(user));
             navigation.navigate('Home', { screen: 'BusinessList' });
           })

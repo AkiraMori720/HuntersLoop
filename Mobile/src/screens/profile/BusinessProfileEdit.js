@@ -423,10 +423,13 @@ export default function BusinessProfileEdit({ navigation, route }) {
                 is24Hour={true}
                 display="default"
                 onChange={(e, time) => {
+                    setShowStartTime(false);
+                    if(!time){
+                        return;
+                    }
                     if (!business.operatingHours) { business.operatingHours = {} }
                     business.operatingHours.from = getTimeString(time);
                     setFromTime(time)
-                    setShowStartTime(false);
                 }}
                 />
             )}
@@ -438,10 +441,13 @@ export default function BusinessProfileEdit({ navigation, route }) {
                 is24Hour={true}
                 display="default"
                 onChange={(e, time) => {
+                    setShowEndTime(false);
+                    if(!time){
+                        return;
+                    }
                     if (!business.operatingHours) { business.operatingHours = {} }
                     business.operatingHours.to = getTimeString(time);
                     setToTime(time)
-                    setShowEndTime(false);
                 }}
                 />
             )}
