@@ -57,7 +57,7 @@ export default function ChatScreen({ navigation, route }) {
     })
   }, [])
 
-  makeChat = async () => {
+  const makeChat = async () => {
     var chatID = user.id < chatee.id ? user.id + '-' + chatee.id : chatee.id + '-' + user.id;
 
     const chatRef = firebase.database().ref('chat/' + chatID);
@@ -74,7 +74,7 @@ export default function ChatScreen({ navigation, route }) {
     });
   }
 
-  onSendMessage = async (messages = []) => {
+  const onSendMessage = async (messages = []) => {
     var isConnected = await checkInternet();
     if (!isConnected) {
       Alert.alert('Please check your internet connection.');
@@ -100,7 +100,7 @@ export default function ChatScreen({ navigation, route }) {
     });
   }
 
-  renderTime = (props) => {
+  const renderTime = (props) => {
     return (
       <View style={{ flexDirection: "row" }}>
         <Time {...props} />
@@ -108,7 +108,7 @@ export default function ChatScreen({ navigation, route }) {
     );
   }
 
-  renderComposer = (props) => {
+  const renderComposer = (props) => {
     return (
       <Composer
         {...props}
@@ -134,7 +134,7 @@ export default function ChatScreen({ navigation, route }) {
           </TouchableOpacity>
         </View>
         <View style={styles.titleContainer}>
-          <Text style={styles.titleTxt}>{chatee.name}</Text>
+          <Text style={styles.titleTxt}>{chatee.name ? chatee.name : 'User'}</Text>
         </View>
       </View>
 

@@ -29,20 +29,7 @@ export default function ProfileScreen({ navigation }) {
   const [refresh, setRefresh] = useState(false);
   const [spinner, setSpinner] = useState(false);
 
-  useEffect(() => {
-    if (Constants.user?.id) {
-      updateLocalUser();
-      getFavorites();
-    }
-  }, []);
-
-  if (useIsFocused() && Constants.refreshFlag) {
-    Constants.refreshFlag = false;
-    updateLocalUser();
-    getFavorites();
-  }
-
-  updateLocalUser = async () => {
+  const updateLocalUser = async () => {
     await getUser(Constants.user?.id)
       .then((user) => {
         if (user) {
@@ -53,8 +40,8 @@ export default function ProfileScreen({ navigation }) {
       })
   }
 
-  getFavorites = () => {
-    var favorites = [];
+  const getFavorites = () => {
+    let favorites = [];
     Constants.user?.favorbids.forEach(each => {
       var item = Constants.business.find(e => e.id == each);
       if (item) {
@@ -71,7 +58,20 @@ export default function ProfileScreen({ navigation }) {
     setRefresh(!refresh);
   }
 
-  onPressItem = (item) => {
+  useEffect(() => {
+    if (Constants.user?.id) {
+      updateLocalUser();
+      getFavorites();
+    }
+  }, []);
+
+  if (useIsFocused() && Constants.refreshFlag) {
+    Constants.refreshFlag = false;
+    updateLocalUser();
+    getFavorites();
+  }
+
+  const onPressItem = (item) => {
     if (item.bid) {//service
       navigation.navigate('Home', { screen: 'ServiceDetail', params: { serviceItem: item } })
     }

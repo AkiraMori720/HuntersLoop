@@ -22,10 +22,12 @@ export const checkInternet = async () => {
 export const signin = (email, password) => {
   return new Promise((resolve, reject) => {
     auth().signInWithEmailAndPassword(email, password)
-      .then((res) => {                
+      .then((res) => {
+        console.log('res', res);
         resolve(getUser(res.user.uid));
       })
       .catch((err) => {
+        console.log('error', err);
         reject(err);
       });
   })
@@ -294,7 +296,7 @@ export const uploadMedia = (folder, name, path) => {
 
     ref.putFile(path)
       .then(async (res) => {
-        downloadURL = await ref.getDownloadURL();
+        const downloadURL = await ref.getDownloadURL();
         resolve(downloadURL);
       })
       .catch((err) => {

@@ -57,8 +57,7 @@ export default function ServiceListScreen({ navigation, route }) {
 
     var isConnected = await checkInternet();
     if (!isConnected) {
-      Alert.alert('Please check your internet connection.');
-      setSpinner(false);
+      Alert.alert('', 'Please check your internet connection.',[{ text: "OK", onPress: () => setSpinner(false) }]);
       return;
     }
 

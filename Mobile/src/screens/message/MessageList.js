@@ -38,7 +38,7 @@ export default function MessageListScreen({ navigation, route }) {
     getRoomChats();
   }, []);
 
-  getRoomChats = () => {
+  const getRoomChats = () => {
     const chatRef = firebase.database().ref('chat');
     chatRef.on('value', snapshot => {
       const allChatsObj = snapshot.val();
@@ -66,16 +66,17 @@ export default function MessageListScreen({ navigation, route }) {
         }
       }
 
+      roomChats.sort((a, b) => a.lastChat < b.lastChat);
       setRoomChats(roomChats);      
     })
   }
 
-  getTimeFromTimestamp = (createdAt) => {
+  const getTimeFromTimestamp = (createdAt) => {
     var s = new Date(createdAt).toLocaleTimeString("en-US");
     return s;
   }
 
-  onDeleteItem = (item) => {
+  const onDeleteItem = (item) => {
     var data = [...roomChats];
     data.splice(data.findIndex(each => each.chateeId == item.chateeId), 1);
     setRoomChats(data);

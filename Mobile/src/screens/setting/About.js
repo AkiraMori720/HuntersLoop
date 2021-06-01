@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   desc: {
     fontSize: RFPercentage(2.2),
     color: Colors.blackColor,
-    padding: 4
+    paddingRight: 8
   },
 
   btn: {

@@ -72,6 +72,7 @@ export default function RequestScreen({ navigation }) {
     Constants.refreshFlag = false;
     if (Constants.user?.bid) {
       var business = Constants.business.find(each => each.id == Constants.user?.bid);
+      console.log('business', business);
       if (business) {
         setLogo(business.img ? business.img : null);
         setBname(business.name);
@@ -187,30 +188,31 @@ export default function RequestScreen({ navigation }) {
         })
         .catch(err => {
           console.log('image resizer error', err);
+          reject(err);
         });
 
-      await uploadMedia('business', Constants.user?.id, newPath)
-        .then((downloadURL) => {
-          if (!downloadURL) return;
-          // console.log('downloadURL', downloadURL)
+      try{
+        const downloadURL = await uploadMedia('business', Constants.user?.id, newPath);
 
-          setImgDownloadUrl(downloadURL);
+        if (!downloadURL) return;
+        console.log('downloadURL', downloadURL)
 
-          resolve();
-        })
-        .catch((err) => {
+        setImgDownloadUrl(downloadURL);
+
+        resolve(downloadURL);
+      } catch(err){
           console.log('upload photo error', err);
           reject(err);
-        })
+      }
     })
   }
 
-  const requestBusiness = async () => {
+  const requestBusiness = async (imgUrl = '') => {
 
-    var nBusiness = {};
+    let nBusiness = {};
     nBusiness.id = '';
     nBusiness.name = bname;
-    nBusiness.img = imgDownloadUrl;
+    nBusiness.img = imgUrl;
     nBusiness.address = address;
     nBusiness.phone = phone;
     nBusiness.email = email;
@@ -232,13 +234,15 @@ export default function RequestScreen({ navigation }) {
       nBusiness.id = Constants.user?.bid
     }
 
+    //console.log('request bussiness', nBusiness);
+
     await setData('business', act, nBusiness)
       .then((res) => {
         Alert.alert(
           'Account Requested Successfully!',
           '',
           [
-            { text: "OK", onPress: () => { setSpinner(false); } }
+            { text: "OK", onPress: () => { setSpinner(false); navigation.pop(); } }
           ]);
 
         if (act == 'add') {
@@ -381,8 +385,8 @@ export default function RequestScreen({ navigation }) {
     setSpinner(true);
     if (photoLocalPath) {
       await uploadPhoto()
-        .then(() => {
-          requestBusiness();
+        .then((imgUrl) => {
+          requestBusiness(imgUrl);
         })
         .catch((err) => {
           console.log('upload photo error', err);
@@ -413,7 +417,7 @@ export default function RequestScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={styles.titleContainer}>
-          <Text style={styles.titleTxt}>Request A Business Account</Text>
+          <Text style={styles.titleTxt} numberOfLines={1} ellipsizeMode={'tail'} >{(Constants.user?.bid)?'Update A Business Account':'Request A Business Account'}</Text>
         </View>
       </View>
 
@@ -540,7 +544,7 @@ export default function RequestScreen({ navigation }) {
       </ScrollView>
 
       <TouchableOpacity style={styles.btn} onPress={() => onRequest()}>
-        <Text style={styles.btnTxt}>REQUEST ACCOUNT</Text>
+        <Text style={styles.btnTxt}>{(Constants.user?.bid)?'UPDATE ACCOUNT':'REQUEST ACCOUNT'}</Text>
       </TouchableOpacity>
 
     </KeyboardAvoidingView>
@@ -567,6 +571,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   titleContainer: {
+    width: '70%',
     justifyContent: 'center',
     alignItems: 'center'
   },

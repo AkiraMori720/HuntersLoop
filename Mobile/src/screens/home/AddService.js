@@ -31,11 +31,13 @@ import { Colors, Constants } from '@constants';
 import { setData, uploadMedia } from '../../service/firebase';
 
 import CheckBox from '@react-native-community/checkbox';
-import DatePicker from 'react-native-datepicker'
+import RNDateTimePicker from '@react-native-community/datetimepicker';
 import {check, PERMISSIONS, RESULTS} from "react-native-permissions";
+import moment from "moment";
+import DropDownPicker from "react-native-dropdown-picker";
 
 export default function AddService({ navigation, route }) {
-    const [service, setService] = useState({season:{}, detailImgs:[]});
+    const [service, setService] = useState({season:{from: moment().format('YYYY-MM-DD'), to: moment().format('YYYY-MM-DD')}, detailImgs:[]});
     const [refresh, setRefresh] = useState(true);
 
     const [mainImagePath, setmainImagePath] = useState();
@@ -114,15 +116,15 @@ export default function AddService({ navigation, route }) {
     };
 
 
-    const pickImage = (index = null) => {
+    const pickImage = async (index = null) => {
         let options = {
             mediaType: 'photo'
         };
-        launchImageLibrary(options, response => {
+        await launchImageLibrary(options, response => {
             if (response.didCancel) {
             } else if (response.error) {
             } else {
-                if (!index) {
+                if (index === null) {
                     service.img = response.uri
                     setmainImagePath(response.uri);
                 } else {
@@ -176,12 +178,12 @@ export default function AddService({ navigation, route }) {
         let options = {
             mediaType: 'photo'
         };
-        launchCamera(options, response => {
+        await launchCamera(options, response => {
             if (response.didCancel) {
             } else if (response.error) {
                 console.log('pick error', response.error)
             } else {
-                if (!index) {
+                if (index === null) {
                     service.img = response.uri
                     setmainImagePath(response.uri);
                 } else {
@@ -238,6 +240,8 @@ export default function AddService({ navigation, route }) {
         if (!service.name) return Alert.alert('', 'Please input the title');
         if (!service.days) return Alert.alert('', 'Please input the Hunt Duration');
         if (!service.hunters) return Alert.alert('', 'Please input the Hunt per package');
+        if (service.season.from && service.season.to && service.season.from > service.season.to) return Alert.alert('','Please select valid Season');
+        if(!service.cid) return Alert.alert('', 'Please select Service Category');
 
         setSpinner(true);
 
@@ -246,6 +250,7 @@ export default function AddService({ navigation, route }) {
             service.id = upated_service.id;
             await setService(service);
         }
+
 
         if (service.img && service.img.substring(0,4) != 'http' && mainImagePath) {
             service.img = await uploadPhoto(mainImagePath, service.id + '/main');
@@ -267,23 +272,20 @@ export default function AddService({ navigation, route }) {
         console.log('post service', service)
         try {
             setData('services', 'update', service).then(res => {
-                Alert.alert('', 'Publish service successfully.');
                 const service_index = Constants.services.findIndex(each => each.id == service.id);
                 if (service_index < 0) {
-                    Constants.services.push(service)    
+                    Constants.services.push(service)
                 } else {
                     Constants.services.splice(service_index, 1, service);
                 }
 
-                setSpinner(false);
+                Alert.alert('', 'Publish service successfully.',[{ text: "OK", onPress: () => setSpinner(false) }]);
             }).catch(error => {
-                setSpinner(false);
-                Alert.alert('', 'Publishing service is failed.');
+                Alert.alert('', 'Publishing service was failed.', [{ text: "OK", onPress: () => setSpinner(false) }]);
             })
         } catch (err) {
             console.warn(err.code, err.message);
-            setSpinner(false);
-            Alert.alert(err.message);
+            Alert.alert('', err.message,[{ text: "OK", onPress: () => setSpinner(false) }]);
         }
     }
 
@@ -311,26 +313,61 @@ export default function AddService({ navigation, route }) {
             </View>
 
             <ScrollView style={[styles.body]} keyboardShouldPersistTaps='always'>
-                <View style={[styles.inputBox, { paddingLeft: 5 }]}>
-                    <RNPickerSelect
-                        items={
-                            Constants.categories.map(category => ({
-                                    label: category.name.toUpperCase(),
-                                    value: category.id
-                                })
-                            )
-                        }
-                        useNativeAndroidPickerStyle={false}
-                        onValueChange={(value) => updateServiceProperty('cid', value) }
-                        value={service.cid}
-                        placeholder={{}}
-                        style={{
-                            inputAndroid: {
-                                color: Colors.blackColor
+                    { Platform.OS === 'android' ?
+                    <View style={[styles.inputBox, { paddingLeft: 5, justifyContent: 'center' }]}>
+                        <RNPickerSelect
+                            items={
+                                Constants.categories.map(category => ({
+                                        label: category.name.toUpperCase(),
+                                        value: category.id
+                                    })
+                                )
                             }
-                        }}
-                    />
-                </View>
+                            useNativeAndroidPickerStyle={false}
+                            onValueChange={(value) => updateServiceProperty('cid', value) }
+                            value={service.cid}
+                            placeholder={{}}
+                            style={{
+                                inputAndroid: {
+                                    color: Colors.blackColor
+                                },
+                                inputIOS: {
+                                    fontSize: RFPercentage(2.5),
+                                    color: Colors.blackColor,
+                                    paddingVertical: 8
+                                }
+                            }}
+                        />
+                    </View>
+                    :
+                    <View style={[styles.inputBox, { paddingLeft: 0, justifyContent: 'center', zIndex: 10 }]}>
+                        <DropDownPicker
+                            items={
+                                Constants.categories.map(category => ({
+                                        label: category.name.toUpperCase(),
+                                        value: category.id
+                                    })
+                                )
+                            }
+                            containerStyle={{
+                                height: '100%'
+                            }}
+                            style={{
+                                backgroundColor: Colors.greyWeakColor
+                            }}
+                            itemStyle={{
+                                justifyContent: 'flex-start',
+                            }}
+                            labelStyle={{
+                                fontSize: RFPercentage(2.5)
+                            }}
+                            dropDownStyle={{
+                                backgroundColor: Colors.greyWeakColor,
+                            }}
+                            onChangeItem={item => updateServiceProperty('cid', item.value)}
+                        />
+                    </View>
+                    }
 
                 <TextInput
                     style={styles.inputBox}
@@ -397,53 +434,38 @@ export default function AddService({ navigation, route }) {
                     value={service.price}
                     onChangeText={(text) => updateServiceProperty('price', text)}
                 ></TextInput>
-                <View style={{flexDirection:'row'}}>
+                <View style={{flexDirection:'row', padding: 4, alignItems: 'center'}}>
                     <CheckBox
                         value={service.isContactPrice}
+                        style={{width: 24, height: 24}}
                         onValueChange={(text) => updateServiceProperty('isContactPrice', text)}
-                        // style={styles.checkbox}
                     >
                     </CheckBox>
-                    <Text style={{paddingTop:5}}>Contact guide for package price</Text>
+                    <Text style={{paddingTop:5, paddingLeft: 5}}>Contact guide for package price</Text>
                 </View>
                 
                 <Text style={[styles.logoTxt, {marginTop:15}]}>Hunting Season</Text>
-                <View style={{flexDirection:'row', marginTop: normalize(10, 'height') }} >
-                    <DatePicker
+                <View style={{flexDirection:'row', marginTop: normalize(10, 'height'), alignItems:'center' }} >
+                    <RNDateTimePicker
                         style={{flex:1}}
-                        date={service.season.from}
+                        value={service.season.from?(new Date(moment(service.season.from))):(new Date())}
                         mode="date"
-                        placeholder="Start Date"
-                        format="YYYY-MM-DD"
-                        customStyles={{
-                        dateInput: {
-                            // marginLeft: 36
-                        }
-                        // ... You can check the source to find the other keys.
-                        }}
-                        onDateChange={(date) => { 
-                            service.season.from = date;
+                        onChange={(event, date) => {
+                            service.season.from = moment(date).format("YYYY-MM-DD");
                             setService(service);
-                            setRefresh(!refresh)
+                            setRefresh(!refresh);
                         }}
                     />
-                    <Text style={{width:10}}></Text>
-                    <DatePicker
-                        style={{flex: 1}}
-                        date={service.season.to}
+                    <Text style={{width:40}}>~</Text>
+                    <RNDateTimePicker
+                        style={{flex:1}}
+                        value={service.season.to?(new Date(moment(service.season.to))):(new Date())}
                         mode="date"
-                        placeholder="End Date"
-                        format="YYYY-MM-DD"
-                        customStyles={{
-                        dateInput: {
-                            // marginLeft: 36
-                        }
-                        // ... You can check the source to find the other keys.
-                        }}
-                        onDateChange={(date) => { 
-                            service.season.to = date;
+                        minimumDate={new Date()}
+                        onChange={(event, date) => {
+                            service.season.to = moment(date).format("YYYY-MM-DD");
                             setService(service);
-                            setRefresh(!refresh)
+                            setRefresh(!refresh);
                         }}
                     />
                 </View>

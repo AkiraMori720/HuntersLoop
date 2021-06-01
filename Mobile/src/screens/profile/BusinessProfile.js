@@ -41,7 +41,7 @@ export default function BusinessProfile({ navigation }) {
 
     }, []);
 
-    getReviews = async () => {
+    const getReviews = async () => {
         setSpinner(true);
         await getData('reviews').then(res => {
             if (Array.isArray(res)) {
@@ -56,7 +56,7 @@ export default function BusinessProfile({ navigation }) {
         business = Constants.business.find(one => one.id == Constants.user.bid);
     }
 
-    onUpdateReviewStatus = async (review, status) => {
+    const onUpdateReviewStatus = async (review, status) => {
         Alert.alert('', 'Are you sure to ' + status + ' the review?',
             [
                 {
@@ -80,7 +80,7 @@ export default function BusinessProfile({ navigation }) {
         );
     }
 
-    onEditPage = () => {
+    const onEditPage = () => {
         navigation.navigate('BusinessProfileEdit', { refresh: () => 
             {
                 setRefresh(!refresh)

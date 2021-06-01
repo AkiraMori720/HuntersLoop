@@ -142,7 +142,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
         let options = {
             mediaType: 'photo'
         };
-        launchCamera(options, response => {
+        await launchCamera(options, response => {
             if (response.didCancel) {
             } else if (response.error) {
                 console.log('pick error', response.error)
@@ -164,11 +164,11 @@ export default function BusinessProfileEdit({ navigation, route }) {
         });
     }
 
-    const pickImage = (index = null) => {
+    const pickImage = async (index = null) => {
         let options = {
             mediaType: 'photo'
         };
-        launchImageLibrary(options, response => {
+        await launchImageLibrary(options, response => {
             if (response.didCancel) {
             } else if (response.error) {
             } else {
@@ -243,11 +243,9 @@ export default function BusinessProfileEdit({ navigation, route }) {
         business.slideImgs = slideImgs
         try {
             setData('business', 'update', business).then(res => {
-                Alert.alert('', 'update business successfully.');
                 const index = Constants.business.findIndex(each => each.id == business.id);
-                console.log('updated business', index);
                 Constants.business.splice(index, 1, business);
-                setSpinner(false);
+                Alert.alert('', 'update business successfully.',[{ text: "OK", onPress: () => setSpinner(false) }]);
 
                 if (route.params.refresh) {
                     route.params.refresh();
@@ -273,7 +271,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.titleTxt}>Edit Business Profile</Text>
+                    <Text style={styles.titleTxt} ellipsizeMode={'tail'} numberOfLines={1} >Edit Business Profile</Text>
                 </View>
             </View>
 
@@ -401,13 +399,11 @@ export default function BusinessProfileEdit({ navigation, route }) {
 
                     <Text style={styles.logoTxt}>Information</Text>
                     <TextInput
-                        style={[styles.inputBox, {alignItems:'flex-start', height:'auto'}]}
+                        style={[styles.inputBox, {alignItems:'flex-start', height:90}]}
                         autoCapitalize='none'
                         placeholder={'About the hunt'}
                         placeholderTextColor={Colors.greyColor}
                         multiline={true}
-                        numberOfLines={5}
-                        textAlignVertical='top'
                         value={business.desc}
                         onChangeText={(text) => updateBusiness('desc', text)}
                     ></TextInput>
@@ -437,7 +433,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
             {showEndTime && (
                 <DateTimePicker
                 // testID="dateTimePicker"
-                value={fromTime}
+                value={toTime}
                 mode='time'
                 is24Hour={true}
                 display="default"

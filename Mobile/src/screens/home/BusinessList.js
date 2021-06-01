@@ -21,7 +21,7 @@ import {SliderPicker} from 'react-native-slider-picker';
 import {Colors, Constants, Images} from '@constants';
 import BusinessItem from '../../components/BusinessItem';
 
-import {getData} from '../../service/firebase';
+import {getData, setData} from '../../service/firebase';
 import {getDistance} from 'geolib';
 import StarRating from 'react-native-star-rating';
 import {Collapse, CollapseBody, CollapseHeader} from 'accordion-collapse-react-native';
@@ -36,6 +36,7 @@ export default class BusinessListScreen extends React.Component {
             keyword: '',
             business: Constants.business.filter(each => each.status === 'approved'),
             services: Constants.services,
+            isBusiness: Constants.user?.role === 'business',
             refresh: false,
             distanceSearch: false,
             distance: 1000,
@@ -49,6 +50,12 @@ export default class BusinessListScreen extends React.Component {
         const { navigation } = this.props;
         this.unSubscribeFocus = navigation.addListener('focus', () => {
             this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => { return true; });
+            const isBusiness = Constants.user?.role === 'business';
+            console.log('isBusiness', isBusiness, this.state.isBusiness);
+            if(isBusiness && isBusiness !== this.state.isBusiness && !this.state.business.find(one => one.id == Constants.user.bid)){
+                Alert.alert('', 'Your business request is not approved yet');
+            }
+            this.setState({isBusiness});
         });
         this.unSubscribeBlur = navigation.addListener('blur', () => {
             if(this.backHandler && this.backHandler.remove){
@@ -230,6 +237,22 @@ export default class BusinessListScreen extends React.Component {
                 }
             ]
         )
+    }
+
+    onDeleteService = (service_id) => {
+        try {
+            setData('services', 'delete', { id: service_id }).then(res => {
+                const service_index = Constants.services.findIndex(each => each.id == service_id);
+                Alert.alert('', 'Deleted service successfully.');
+                Constants.services.splice(service_index, 1);
+                this.setState({ refresh: !this.state.refresh });
+            }).catch(error => {
+                Alert.alert('', 'Deleting service was failed.');
+            })
+        } catch (err) {
+            console.warn(err.code, err.message);
+            Alert.alert(err.message);
+        }
     }
 
     // let myServices = [];
@@ -436,7 +459,7 @@ export default class BusinessListScreen extends React.Component {
                             Constants.categories.map(category => {
                                 const render_services = this.myServices().filter(one => one.cid == category.id);
                                 if (render_services.length == 0 ) return null;
-                                // console.log({render_services});
+                                console.log(category);
                                 return (
                                     <Collapse key={category.id} style={{backgroundColor: 'white', marginBottom:5, borderRadius:5}}>
                                         <CollapseHeader>
@@ -467,7 +490,7 @@ export default class BusinessListScreen extends React.Component {
                                                                     <TouchableOpacity style={{padding:5}} onPress={() => {navigation.navigate('AddService', { service: one })}}>
                                                                         <EntypoIcon name="pencil" style={[styles.headerIcon, { color:'black', fontSize: RFPercentage(3), }]}/>
                                                                     </TouchableOpacity>
-                                                                    <TouchableOpacity style={{padding:5}} onPress={() => {}}>
+                                                                    <TouchableOpacity style={{padding:5}} onPress={() => this.onDeleteService(one.id)}>
                                                                         <EntypoIcon name="trash" style={[styles.headerIcon, { color:'red', fontSize: RFPercentage(3), }]}/>
                                                                     </TouchableOpacity>
                                                                 </View>

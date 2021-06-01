@@ -163,38 +163,48 @@ export default function SigninScreen({ navigation }) {
 
     setSpinner(true);
 
-    await signin(email, pwd)
-      .then((user) => {
-        //console.log('signin success', user);
-
-        if (!user.active) {
-          Alert.alert(
-            'You are banned by admin.',
-            '',
-            [
+    await getUserSocialRegistered(email)
+        .then(async (user) => {
+          if (user == 'no exist') {
+            Alert.alert('', 'This user is not registered',             [
               { text: "OK", onPress: () => setSpinner(false) }
-            ],
-          );
-          return;
-        }
+            ]);
+            return;
+          }
 
-        setSpinner(false);
+        await signin(email, pwd)
+          .then((user) => {
+            //console.log('signin success', user);
 
-        Constants.user = user;
-        AsyncStorage.setItem('user', JSON.stringify(user));
-        navigation.navigate('Home', { screen: 'BusinessList' });
-      })
-      .catch((err) => {
-        console.log('signin errr', err);
+            if (!user.active) {
+              Alert.alert(
+                'You are banned by admin.',
+                '',
+                [
+                  { text: "OK", onPress: () => setSpinner(false) }
+                ],
+              );
+              return;
+            }
 
-        Alert.alert(
-          'Signin is failed.',
-          'Please try again.',
-          [
-            { text: "OK", onPress: () => setSpinner(false) }
-          ],
-        );
-      })
+            setSpinner(false);
+
+            Constants.user = user;
+            AsyncStorage.setItem('user', JSON.stringify(user));
+            navigation.navigate('Home', { screen: 'BusinessList' });
+          })
+          .catch((err) => {
+            console.log('signin errr', err);
+
+            Alert.alert(
+              'Signin is failed.',
+              'Please try again.',
+              [
+                { text: "OK", onPress: () => setSpinner(false) }
+              ],
+            );
+          })
+        });
   }
 
   return (
@@ -350,6 +360,7 @@ const styles = StyleSheet.create({
     height: '43%',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    paddingBottom: 12
   },
   labelTxt: {
     fontSize: RFPercentage(3),

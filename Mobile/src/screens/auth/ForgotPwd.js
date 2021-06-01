@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
     height: '43%',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    paddingBottom: 12
   },
   labelTxt: {
     fontSize: RFPercentage(3),

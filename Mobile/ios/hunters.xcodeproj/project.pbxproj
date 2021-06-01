@@ -307,7 +307,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = 73NRM5JN65;
+						DevelopmentTeam = 9LYPE5V96D;
 						LastSwiftMigration = 1120;
 						ProvisioningStyle = Automatic;
 					};
@@ -765,7 +765,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 9LYPE5V96D;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = hunters/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -780,7 +780,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.brainyapps.hunters;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brainyapps.huntersdev;
 				PRODUCT_NAME = "Hunters Loop";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
