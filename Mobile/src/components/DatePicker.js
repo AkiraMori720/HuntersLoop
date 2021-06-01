@@ -42,6 +42,20 @@ export default function DatePicker({ placeholder, style, value, action, minimumD
 		action({ value: moment(newDate).format('YYYY-MM-DD') });
 	};
 
+	if(Platform.OS === 'ios'){
+		return (
+			<DateTimePicker
+				style={style}
+				mode='date'
+				display='default'
+				minimumDate={minimumDate}
+				value={value??new Date()}
+				onChange={onChange}
+				textColor={'black'}
+			/>
+		);
+	}
+
 	let button = (
 		<TouchableOpacity
 			style={styles.input}
