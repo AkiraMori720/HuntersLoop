@@ -32,7 +32,7 @@ import EntypoIcon from 'react-native-vector-icons/Entypo';
 EntypoIcon.loadFont();
 
 import { Colors, Images, Constants } from '@constants';
-import { checkInternet } from '../../service/firebase';
+import {checkInternet, sendNotifications} from '../../service/firebase';
 
 export default function ChatScreen({ navigation, route }) {
   const [messages, setMessages] = useState([]);
@@ -42,25 +42,51 @@ export default function ChatScreen({ navigation, route }) {
 
   const [chatRef, setChatRef] = useState();
   const [chats, setChats] = useState([])
+  const chatID = user.id < chatee.id ? user.id + '-' + chatee.id : chatee.id + '-' + user.id;
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", () => { });
+    // this.unSubscribeFocus = navigation.addListener('focus', () => {
+    //   onOnline();
+    // });
+    //
+    // const unSubscribeBlur = navigation.addListener('blur', () => {
+    //   onOffline();
+    // });
 
+    onOnline();
     makeChat();
-    
+
     if(Platform.OS === 'ios'){
       KeyboardManager.setEnable(false);
     }
 
+
     return (() => {
-      backHandler.remove()
+      const lastVisitedRef = firebase.database().ref('chat/' + chatID + '/lastVisited/' + user.id);
+      lastVisitedRef.set(Date.now());
+      onOffline();
+
+      backHandler.remove();
+      // if(unSubscribeBlur){
+      //   unSubscribeBlur();
+      // }
     })
   }, [])
 
-  const makeChat = async () => {
-    var chatID = user.id < chatee.id ? user.id + '-' + chatee.id : chatee.id + '-' + user.id;
+  const onOnline = () => {
+    const statusRef = firebase.database().ref('chat/' + chatID + '/status/' + user.id);
+    statusRef.set('online');
+    statusRef.onDisconnect().set('offline').then(() => {});
+  }
 
-    const chatRef = firebase.database().ref('chat/' + chatID);
+  const onOffline = () => {
+    const statusRef = firebase.database().ref('chat/' + chatID + '/status/' + user.id);
+    statusRef.set('offline');
+  }
+
+  const makeChat = async () => {
+    const chatRef = firebase.database().ref('chat/' + chatID + '/messages');
     setChatRef(chatRef);
 
     chatRef.on('value', snapshot => {
@@ -81,6 +107,10 @@ export default function ChatScreen({ navigation, route }) {
       return;
     }
 
+    const statusRef= firebase.database().ref('chat/' + chatID + '/status/' + chatee.id);
+    const status = (await statusRef.once('value')).val();
+    console.log('chatee status', status);
+
     messages.forEach(message => {
       if (message.text.trim() == "") {
         return;
@@ -97,6 +127,11 @@ export default function ChatScreen({ navigation, route }) {
       }
 
       chatRef.push(chat);
+
+      // Send Notification
+      if(status === 'offline' && chatee.fcmToken){
+        sendNotifications([chatee.fcmToken], (user.name && user.name.length)?user.name:'User', message.text, { action: 'message', chateeId: user.id })
+      }
     });
   }
 

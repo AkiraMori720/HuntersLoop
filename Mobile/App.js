@@ -30,16 +30,18 @@ export default class App extends React.Component {
           remoteMessage.data,
       );
       if(Constants.user){
-        const { uid, action } = remoteMessage.data;
-        if (!uid) {
-          return;
-        }
+        const { action, uid, chateeId } = remoteMessage.data;
+
         switch (action){
           case 'review':
-            Linking.openURL(REVIEW_URL);
+            if(uid && Constants.user.role === 'business'){
+              setTimeout(() => Navigation.navigate("BusinessProfile", { screen: 'BusinessProfile' }, 1000));
+            }
             break;
           case 'message':
-            setTimeout(() => Navigation.navigate("Home", { screen: '' }, 1000));
+            if(chateeId){
+              setTimeout(() => Navigation.navigate("Message", { screen: 'Chat', params: { chateeId: chateeId }}, 1000));
+            }
             break;
         }
       }

@@ -2,7 +2,8 @@ import React from 'react';
 import {Linking, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {Notifier} from 'react-native-notifier';
-import {REVIEW_URL} from "../../urls";
+import { Constants } from "@constants";
+import Navigation from "../../service/navigation";
 
 const AVATAR_SIZE = 48;
 const BUTTON_HIT_SLOP = {
@@ -56,13 +57,18 @@ const NotifierComponent = React.memo(({
 	const { body: text, title } = notification;
 
 	const onPress = () => {
-		const { uid, action } = data;
-		if (!uid) {
-			return;
-		}
+		const { uid, action, chateeId } = data;
+
 		switch (action){
 			case 'review':
-				Linking.openURL(REVIEW_URL);
+				if(uid && Constants.user.role === 'business'){
+					setTimeout(() => Navigation.navigate("BusinessProfile", { screen: 'BusinessProfile' }, 1000));
+				}
+				break;
+			case 'message':
+				if(chateeId){
+					setTimeout(() => Navigation.navigate("Message", { screen: 'Chat', params: { chateeId: chateeId }}, 1000));
+				}
 				break;
 		}
 		// TODO

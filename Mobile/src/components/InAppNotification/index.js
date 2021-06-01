@@ -5,7 +5,7 @@ import NotifierComponent from './NotifierComponent';
 import EventEmitter from '../../service/events';
 
 export const INAPP_NOTIFICATION_EMITTER = 'NotificationInApp';
-export const INAPP_NOTIFICATION_DURATION = 15000;
+export const INAPP_NOTIFICATION_DURATION = 5000;
 
 // Gets the current screen from navigation state
 export const getActiveRoute = (state) => {
@@ -25,7 +25,7 @@ const InAppNotification = memo(() => {
 		const { notification, data } = message;
 		// const state = Navigation.navigationRef.current?.getRootState();
 		// const route = getActiveRoute(state);
-		if (data.uid) {
+		if (data.action) {
 			Notifier.showNotification({
 				showEasing: Easing.inOut(Easing.quad),
 				Component: NotifierComponent,

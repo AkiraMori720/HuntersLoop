@@ -185,16 +185,18 @@ export default function SplashScreen({ navigation }) {
           await setFcmToken(Constants.user.id);
           navigation.navigate("Home", { screen: 'BusinessList' });
           if(Constants.notification){
-            const { uid, action } = Constants.notification;
-            if (!uid) {
-              return;
-            }
+            const { uid, action, chateeId } = Constants.notification;
+
             switch (action){
               case 'review':
-                Linking.openURL(REVIEW_URL);
+                if(uid && Constants.user.role === 'business'){
+                  setTimeout(() => Navigation.navigate("BusinessProfile", { screen: 'BusinessProfile' }, 1000));
+                }
                 break;
               case 'message':
-                setTimeout(() => Navigation.navigate("Home", { screen: '' }, 1000));
+                if(chateeId){
+                  setTimeout(() => Navigation.navigate("Message", { screen: 'Chat', params: { chateeId: chateeId }}, 1000));
+                }
                 break;
             }
           }
@@ -203,8 +205,8 @@ export default function SplashScreen({ navigation }) {
           // navigation.navigate('Auth')
           setSpinner(false);
           navigation.navigate("Home", { screen: 'BusinessList' });
-          Constants.notification = null;
         }
+        Constants.notification = null;
       })
   }
 

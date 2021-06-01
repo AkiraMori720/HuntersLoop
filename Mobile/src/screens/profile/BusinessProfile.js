@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
     Dimensions,
     Platform,
-    Text,
+    Text, Alert,
 } from 'react-native';
 import normalize from 'react-native-normalize';
 import { RFPercentage } from 'react-native-responsive-fontsize';

@@ -33,6 +33,7 @@ import { setData } from '../../service/firebase';
 export default function ServiceDetailScreen({ navigation, route }) {
   const serviceItem = route.params.serviceItem;
   const [page, setPage] = useState('hunt');
+  console.log('serviceItem', serviceItem);
 
   const [reviewModal, setReviewModal] = useState(false);
   const [spinner, setSpinner] = useState(false);
@@ -374,10 +375,12 @@ export default function ServiceDetailScreen({ navigation, route }) {
                 onChange={(activeSections) => setActiveSections(activeSections)}
               />
             </View>
-
-            {serviceItem.mode != 'view' && <TouchableOpacity style={styles.btn} onPress={() => setPage('hunter')}>
-              <Text style={styles.btnTxt}>CONTACT GUIDE</Text>
-            </TouchableOpacity>}
+            {
+              (serviceItem.mode !== 'view') &&
+              <TouchableOpacity style={styles.btn} onPress={() => setPage('hunter')}>
+                <Text style={styles.btnTxt}>CONTACT GUIDE</Text>
+              </TouchableOpacity>
+            }
           </>
         }
         {
