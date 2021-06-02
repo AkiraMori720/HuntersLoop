@@ -71,19 +71,27 @@ class Header extends Component {
     for (let room in allChatsObj) {
       var userIds = room.split("-");
       let roomChatsObj = allChatsObj[room];
-      let roomLastChat = roomChatsObj[Object.keys(roomChatsObj)[Object.keys(roomChatsObj).length - 1]];
-      let roomChatCount = Object.keys(roomChatsObj).length;
+
+      let roomMessages = roomChatsObj.messages??{};
+      let lastVisited = roomChatsObj.lastVisited??{};
+
+      let roomLastChat = (roomMessages.length)?roomMessages[Object.keys(roomMessages)[Object.keys(roomMessages).length - 1]]:{};
+      let roomChatCount = Object.keys(roomMessages).length;
       if (userIds[0] == this.state.user.id) {
+        let unread = (Object.values(roomMessages).filter(m => !lastVisited[this.state.user.id] || m.createdAt > lastVisited[this.state.user.id])).length;
         roomChatFeatureArrs.push({
           chateeId: userIds[1],
           count: roomChatCount,
+          unread,
           lastChat: roomLastChat,
         })
       }
       else if (userIds[1] == this.state.user.id) {
+        let unread = (Object.values(roomMessages).filter(m => !lastVisited[this.state.user.id] || m.createdAt > lastVisited[this.state.user.id])).length;
         roomChatFeatureArrs.push({
           chateeId: userIds[0],
           count: roomChatCount,
+          unread,
           lastChat: roomLastChat
         })
       }
@@ -115,7 +123,7 @@ class Header extends Component {
       else if (roomChatFeatureArrs.length == savedRoomChatFeatureArrs.length) {
         roomChatFeatureArrs.forEach((each, index) => {
           if (each.count != savedRoomChatFeatureArrs[index].count) {
-            if (each.lastChat.user._id == each.chateeId) {
+            if (each.lastChat.user?._id == each.chateeId) {
               var chatee = this.state.users.find(e => e.id == each.chateeId);
               var newMessage = {
                 chatee: chatee,

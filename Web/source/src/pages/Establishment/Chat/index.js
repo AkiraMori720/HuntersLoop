@@ -66,16 +66,25 @@ class Chat extends Component {
     for (let room in allChatsObj) {
       var userIds = room.split("-");
       let roomChatsObj = allChatsObj[room];
-      let roomLastChat = roomChatsObj[Object.keys(roomChatsObj)[Object.keys(roomChatsObj).length - 1]];
+
+      let roomMessages = roomChatsObj.messages??{};
+      let lastVisited = roomChatsObj.lastVisited??{};
+
+      let roomLastChat = (roomMessages.length)?roomMessages[Object.keys(roomMessages)[Object.keys(roomMessages).length - 1]]:{};
+      let roomChatCount = Object.keys(roomMessages).length;
       if (userIds[0] == this.state.user.id) {
+        let unread = (Object.values(roomMessages).filter(m => !lastVisited[this.state.user.id] || m.createdAt > lastVisited[this.state.user.id])).length;
         roomLastChats.push({
           chateeId: userIds[1],
+          unread,
           lastChat: roomLastChat
         })
       }
       else if (userIds[1] == this.state.user.id) {
+        let unread = (Object.values(roomMessages).filter(m => !lastVisited[this.state.user.id] || m.createdAt > lastVisited[this.state.user.id])).length;
         roomLastChats.push({
           chateeId: userIds[0],
+          unread,
           lastChat: roomLastChat
         })
       }
@@ -95,8 +104,8 @@ class Chat extends Component {
     chatRef.on('value', snapshot => {
       const chatsObj = snapshot.val();
       let chats = [];
-      for (let key in chatsObj) {
-        chats.push(chatsObj[key]);
+      for (let key in chatsObj.messages??{}) {
+        chats.push(chatsObj.messages[key]);
       }
       this.setState({
         chats: chats,
@@ -124,7 +133,7 @@ class Chat extends Component {
         createdAt: new Date().getTime()
       }
 
-      this.state.chatRef.push(chat);
+      this.state.chatRef.child('/messages').push(chat);
       this.setState({ message: '' });
     }
   }
@@ -165,9 +174,9 @@ class Chat extends Component {
 
                                     <Media className="overflow-hidden" body>
                                       <h5 className="text-truncate font-size-14 mb-1">{chatee.name ? chatee.name : 'User'}</h5>
-                                      <p className="text-truncate mb-0">{each.lastChat.text}</p>
+                                      <p className="text-truncate mb-0">{each.lastChat.text??''}</p>
                                     </Media>
-                                    <div className="font-size-11">{this.getTimeFromTimestamp(each.lastChat.createdAt)}</div>
+                                    <div className="font-size-11">{each.lastChat.createdAt?this.getTimeFromTimestamp(each.lastChat.createdAt):''}</div>
                                   </Media>
                                 </Link>
                               </li>
