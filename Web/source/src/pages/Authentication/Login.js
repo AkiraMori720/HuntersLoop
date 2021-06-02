@@ -69,7 +69,7 @@ class Login extends Component {
             <div className="">
               <AvForm className="form-horizontal" onValidSubmit={this.handleValidSubmit}>
 
-                {this.props.auth.error ? <Alert color="danger">{this.props.auth.error.message??this.props.auth.error}</Alert> : null}
+                {this.props.auth.error ? <Alert color="danger">{this.props.auth.error}</Alert> : null}
 
                 <div className="form-group">
                   <AvField name="email" label="" value="" className="form-control" placeholder="Email" type="email" required />
