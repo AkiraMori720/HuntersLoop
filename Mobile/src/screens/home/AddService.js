@@ -284,7 +284,10 @@ export default function AddService({ navigation, route }) {
                     Constants.services.splice(service_index, 1, service);
                 }
 
-                Alert.alert('', 'Publish service successfully.',[{ text: "OK", onPress: () => setSpinner(false) }]);
+                Alert.alert('', 'Publish service successfully.',[{ text: "OK", onPress: () => {
+                        setSpinner(false);
+                        navigation.pop();
+                    } }]);
             }).catch(error => {
                 Alert.alert('', 'Publishing service was failed.', [{ text: "OK", onPress: () => setSpinner(false) }]);
             })
@@ -357,6 +360,7 @@ export default function AddService({ navigation, route }) {
                                 })
                             )
                         }
+                        defaultValue={service.cid}
                         containerStyle={{
                             height: '100%'
                         }}
@@ -615,14 +619,13 @@ export default function AddService({ navigation, route }) {
                 </View>
 
                 <TextInput
-                    style={[styles.inputBox, {alignItems:'flex-start', height:'auto'}]}
+                    style={[styles.inputBox, {alignItems:'flex-start', height:90}]}
                     autoCapitalize='none'
                     placeholder={'Terms and Conditions'}
                     placeholderTextColor={Colors.greyColor}
                     defaultValue={service.terms}
                     onChangeText={(text) => service.terms = text}
                     multiline={true}
-                    numberOfLines={5}
                     textAlignVertical='top'
                 ></TextInput>
 

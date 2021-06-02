@@ -73,6 +73,7 @@ export default function DatePicker({ placeholder, style, type, value, action, mi
 				value={value??new Date()}
 				onChange={onChange}
 				textColor={'black'}
+				themeVariant={'light'}
 			/>
 		);
 	}

@@ -403,7 +403,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
                                 setFromTime(value)
                             }}
                         />
-                        <Text style={{width:60, textAlign: 'center', color: 'white'}}>~</Text>
+                        <Text style={{width:60, textAlign: 'center', color: 'black'}}>~</Text>
                         <DatePicker
                             style={{flex: 1}}
                             placeholder={'Select Time'}
@@ -422,7 +422,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
 
                     <Text style={styles.logoTxt}>Information</Text>
                     <TextInput
-                        style={[styles.inputBox, {alignItems:'flex-start', height:90}]}
+                        style={[styles.inputBox, {alignItems:'flex-start', height:90, marginBottom: 12}]}
                         autoCapitalize='none'
                         placeholder={'About the hunt'}
                         placeholderTextColor={Colors.greyColor}
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     },
 
     body: {
-        backgroundColor: Colors.greyStrongColor,
+        backgroundColor: Colors.whiteColor,
         flexGrow: 1,
         flex: 1
     },
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     },
     logoTxt: {
         fontSize: RFPercentage(2.5),
-        color: 'white',
+        color: 'black',
         marginTop: 10,
     },
 
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         fontSize: RFPercentage(2.2),
         fontWeight: '600',
-        color: Colors.whiteColor,
+        color: Colors.blackColor,
         marginTop: normalize(19, 'height'),
         marginRight: normalize(10)
     },

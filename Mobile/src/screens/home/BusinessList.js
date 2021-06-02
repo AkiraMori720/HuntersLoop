@@ -240,19 +240,27 @@ export default class BusinessListScreen extends React.Component {
     }
 
     onDeleteService = (service_id) => {
-        try {
-            setData('services', 'delete', { id: service_id }).then(res => {
-                const service_index = Constants.services.findIndex(each => each.id == service_id);
-                Alert.alert('', 'Deleted service successfully.');
-                Constants.services.splice(service_index, 1);
-                this.setState({ refresh: !this.state.refresh });
-            }).catch(error => {
-                Alert.alert('', 'Deleting service was failed.');
-            })
-        } catch (err) {
-            console.warn(err.code, err.message);
-            Alert.alert(err.message);
-        }
+        Alert.alert( 'Are you sure to delete?', '',
+            [
+            {
+                text: "YES", onPress: () => {
+                    try {
+                        setData('services', 'delete', { id: service_id }).then(res => {
+                            const service_index = Constants.services.findIndex(each => each.id == service_id);
+                            Alert.alert('', 'Deleted service successfully.');
+                            Constants.services.splice(service_index, 1);
+                            this.setState({ refresh: !this.state.refresh });
+                        }).catch(error => {
+                            Alert.alert('', 'Deleting service was failed.');
+                        })
+                    } catch (err) {
+                        console.warn(err.code, err.message);
+                        Alert.alert(err.message);
+                    }
+                }
+            },
+                { text: "CANCEL", onPress: () => { } }
+            ]);
     }
 
     // let myServices = [];
