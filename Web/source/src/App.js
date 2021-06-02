@@ -26,7 +26,7 @@ class App extends Component {
 	init = () => {
 		let storeUser = this.props.auth.user;
 		let storageUser = JSON.parse(localStorage.getItem("authUser"));
-		if(!storeUser || storageUser){
+		if(!storeUser && storageUser){
 			store.dispatch(loginUser({email: storageUser.email, password: storageUser.pwd}));
 		}
 	}
