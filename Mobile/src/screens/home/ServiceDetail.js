@@ -80,7 +80,7 @@ export default function ServiceDetailScreen({ navigation, route }) {
   }
 
   const getReviews = () => {
-    var reviews = Constants.reviews.filter(each => each.sid == serviceItem.id);
+    var reviews = Constants.reviews.filter(each => serviceItem.id && each.sid == serviceItem.id);
     var nReviews = [];
     reviews.forEach((each) => {
       var user = Constants.users.find(e => e.id == each.uid);
@@ -168,7 +168,7 @@ export default function ServiceDetailScreen({ navigation, route }) {
   }
 
   const getReviewLength = (serviceItem) => {
-    var reviews = Constants.reviews.filter(each => each.sid == serviceItem.id);
+    var reviews = Constants.reviews.filter(each => serviceItem.id && each.sid == serviceItem.id);
     return reviews.length;
   }
 
@@ -240,7 +240,7 @@ export default function ServiceDetailScreen({ navigation, route }) {
                           rating={each.rating}
                           selectedStar={(rating) => { }}
                         />
-                        <Text style={styles.reviewTxt}>{each.rating.toFixed(1)}</Text>
+                        <Text style={styles.reviewTxt}>{each.rating?each.rating.toFixed(1):''}</Text>
                       </View>
                     </View>
                   </View>
