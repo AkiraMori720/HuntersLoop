@@ -28,10 +28,11 @@ target 'hunters' do
   pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse.podspec"
   pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications.podspec"
   pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary.podspec"
-   
+
   config = use_native_modules!
 
   use_react_native!(:path => config["reactNativePath"])
+
 
   target 'huntersTests' do
     inherit! :complete

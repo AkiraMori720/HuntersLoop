@@ -24,7 +24,7 @@ import { useIsFocused } from '@react-navigation/native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import ImageResizer from 'react-native-image-resizer';
 import RNPickerSelect from 'react-native-picker-select';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import ImagePicker from "react-native-image-crop-picker";
 
 import { Colors, Constants } from '@constants';
 
@@ -119,31 +119,34 @@ export default function AddService({ navigation, route }) {
 
     const pickImage = async (index = null) => {
         let options = {
+            cropping: false,
+            compressImageQuality: 0.8,
+            enableRotationGesture: true,
+            avoidEmptySpaceAroundImage: false,
             mediaType: 'photo'
         };
-        await launchImageLibrary(options, response => {
-            if (response.didCancel) {
-            } else if (response.error) {
+        try{
+            const response = await ImagePicker.openPicker(options);
+            if (index === null) {
+                service.img = response.path
+                setmainImagePath(response.path);
             } else {
-                if (index === null) {
-                    service.img = response.uri
-                    setmainImagePath(response.uri);
-                } else {
-                    service.detailImgs[index] = response.uri
-                    let new_paths = imagesPath;
-                    new_paths[index] = response.uri;
-                    setImagesPath(new_paths);
-                }
-                console.log('response', response);
-                // setService(service);
-                setRefresh(!refresh)
+                service.detailImgs[index] = response.path
+                let new_paths = imagesPath;
+                new_paths[index] = response.path;
+                setImagesPath(new_paths);
             }
-        });
+            console.log('response', response);
+            // setService(service);
+            setRefresh(!refresh)
+        } catch (e) {
+            console.log('pick error', e)
+        }
     };
 
     const checkCameraPermission = () => {
         return new Promise((resolve, reject) => {
-            check(PERMISSIONS.IOS.CAMERA)
+            check(Platform.OS === 'ios'?PERMISSIONS.IOS.CAMERA:PERMISSIONS.ANDROID.CAMERA)
                 .then((result) => {
                     if (result == RESULTS.GRANTED) resolve(true);
                     else resolve(false);
@@ -155,49 +158,48 @@ export default function AddService({ navigation, route }) {
     }
 
     const takePhoto = async (index = null) => {
-        if (Platform.OS === 'ios') {
-            let isCameraPermission = await checkCameraPermission();
-            if (!isCameraPermission) {
-                Alert.alert(
-                    'Visit settings and allow camera permission',
-                    '',
-                    [
-                        {
-                            text: "OK", onPress: () => {
-                                Linking.openURL('app-settings:');
-                            }
-                        },
-                        {
-                            text: "CANCEL", onPress: () => {
-                            }
+        let isCameraPermission = await checkCameraPermission();
+        if (!isCameraPermission) {
+            Alert.alert(
+                'Visit settings and allow camera permission',
+                '',
+                [
+                    {
+                        text: "OK", onPress: () => {
+                            Linking.openURL('app-settings:');
                         }
-                    ]);
-                return;
-            }
+                    },
+                    {
+                        text: "CANCEL", onPress: () => {
+                        }
+                    }
+                ]);
+            return;
         }
 
         let options = {
-            mediaType: 'photo'
+            cropping: false,
+            compressImageQuality: 0.8,
+            enableRotationGesture: true,
+            avoidEmptySpaceAroundImage: false,
         };
-        await launchCamera(options, response => {
-            if (response.didCancel) {
-            } else if (response.error) {
-                console.log('pick error', response.error)
+        try{
+            const response = await ImagePicker.openCamera(options);
+            if (index === null) {
+                service.img = response.path
+                setmainImagePath(response.path);
             } else {
-                if (index === null) {
-                    service.img = response.uri
-                    setmainImagePath(response.uri);
-                } else {
-                    service.detailImgs[index] = response.uri
-                    let new_paths = imagesPath;
-                    new_paths[index] = response.uri;
-                    setImagesPath(new_paths);
+                service.detailImgs[index] = response.path
+                let new_paths = imagesPath;
+                new_paths[index] = response.path;
+                setImagesPath(new_paths);
 
-                }
-                // setService(service);
-                setRefresh(!refresh)
             }
-        });
+            // setService(service);
+            setRefresh(!refresh)
+        } catch (e) {
+            console.log('pick error', e)
+        }
     }
 
     const uploadPhoto = (localPath, fbPath) => {

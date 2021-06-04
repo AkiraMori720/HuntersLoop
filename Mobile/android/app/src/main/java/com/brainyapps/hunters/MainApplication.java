@@ -2,6 +2,8 @@ package com.brainyapps.hunters;
 
 import android.app.Application;
 import android.content.Context;
+import androidx.annotation.Nullable;
+
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
@@ -33,6 +35,11 @@ public class MainApplication extends Application implements ReactApplication {
         protected String getJSMainModuleName() {
           return "index";
         }
+
+          @Override
+          protected @Nullable String getBundleAssetName() {
+              return "app.bundle";
+          }
       };
 
   @Override

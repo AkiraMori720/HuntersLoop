@@ -40,7 +40,7 @@ import {
   purchaseErrorListener,
   purchaseUpdatedListener, requestSubscription,
 } from 'react-native-iap';
-import {launchCamera, launchImageLibrary} from "react-native-image-picker";
+import ImagePicker from "react-native-image-crop-picker";
 import {check, PERMISSIONS, RESULTS} from "react-native-permissions";
 import RNPickerSelect from "react-native-picker-select";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -114,23 +114,26 @@ export default function RequestScreen({ navigation }) {
         ]);
   };
 
-  const pickImage = () => {
+  const pickImage = async () => {
     let options = {
+      cropping: false,
+      compressImageQuality: 0.8,
+      enableRotationGesture: true,
+      avoidEmptySpaceAroundImage: false,
       mediaType: 'photo'
     };
-    launchImageLibrary(options, response => {
-      if (response.didCancel) {
-      } else if (response.error) {
-      } else {
-        setPhotoLocalPath(response.uri);
-        setLogo(response.uri)
-      }
-    });
+    try{
+        const response = await ImagePicker.openPicker(options);
+        setPhotoLocalPath(response.path);
+        setLogo(response.path)
+    } catch (e) {
+        console.log('pick error', e)
+    }
   };
 
   const checkCameraPermission = () => {
     return new Promise((resolve, reject) => {
-      check(PERMISSIONS.IOS.CAMERA)
+      check(Platform.OS === 'ios'?PERMISSIONS.IOS.CAMERA:PERMISSIONS.ANDROID.CAMERA)
           .then((result) => {
             if (result == RESULTS.GRANTED) resolve(true);
             else resolve(false);
@@ -142,40 +145,38 @@ export default function RequestScreen({ navigation }) {
   }
 
   const takePhoto = async () => {
-    if (Platform.OS === 'ios') {
-      let isCameraPermission = await checkCameraPermission();
-      if (!isCameraPermission) {
-        Alert.alert(
-            'Visit settings and allow camera permission',
-            '',
-            [
-              {
-                text: "OK", onPress: () => {
-                  Linking.openURL('app-settings:');
-                }
-              },
-              {
-                text: "CANCEL", onPress: () => {
-                }
+    let isCameraPermission = await checkCameraPermission();
+    if (!isCameraPermission) {
+      Alert.alert(
+          'Visit settings and allow camera permission',
+          '',
+          [
+            {
+              text: "OK", onPress: () => {
+                Linking.openURL('app-settings:');
               }
-            ]);
-        return;
-      }
+            },
+            {
+              text: "CANCEL", onPress: () => {
+              }
+            }
+          ]);
+      return;
     }
 
     let options = {
-      mediaType: 'photo'
+      cropping: false,
+      compressImageQuality: 0.8,
+      enableRotationGesture: true,
+      avoidEmptySpaceAroundImage: false,
     };
-    launchCamera(options, response => {
-      if (response.didCancel) {
-      } else if (response.error) {
-        console.log('pick error', response.error)
-      } else {
-        // console.log('path', response.uri)
-        setPhotoLocalPath(response.uri);
-        setLogo(response.uri)
-      }
-    });
+    try{
+        const response = await ImagePicker.openCamera(options);
+        setPhotoLocalPath(response.path);
+        setLogo(response.path)
+    } catch (e) {
+        console.log('pick error', e)
+    }
   }
 
   const uploadPhoto = () => {

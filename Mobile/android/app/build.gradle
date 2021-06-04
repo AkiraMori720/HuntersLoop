@@ -78,6 +78,7 @@ import com.android.build.OutputFile
  */
 
 project.ext.react = [
+    bundleAssetName: "app.bundle",
     enableHermes: false,  // clean and rebuild if changing
 ]
 

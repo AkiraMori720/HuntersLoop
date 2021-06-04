@@ -30,7 +30,7 @@ import {Colors, Images, Constants} from '@constants';
 import FavoriteItem from '../../components/FavoriteItem';
 
 import {setData, uploadMedia} from '../../service/firebase';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import ImagePicker from "react-native-image-crop-picker";
 
 navigator.geolocation = require('@react-native-community/geolocation');
 navigator.geolocation = require('react-native-geolocation-service');
@@ -71,7 +71,7 @@ export default function ProfileEditScreen({navigation, route}) {
 
     const checkCameraPermission = () => {
         return new Promise((resolve, reject) => {
-            check(PERMISSIONS.IOS.CAMERA)
+            check(Platform.OS === 'ios'?PERMISSIONS.IOS.CAMERA:PERMISSIONS.ANDROID.CAMERA)
                 .then((result) => {
                     if (result == RESULTS.GRANTED) resolve(true);
                     else resolve(false);
@@ -106,59 +106,61 @@ export default function ProfileEditScreen({navigation, route}) {
 
     const pickImage = async () => {
         let options = {
+            cropping: false,
+            compressImageQuality: 0.8,
+            enableRotationGesture: true,
+            avoidEmptySpaceAroundImage: false,
             mediaType: 'photo'
         };
-        launchImageLibrary(options, response => {
-            if (response.didCancel) {
-            } else if (response.error) {
-                console.log('pick error', response.error)
-            } else {
-                // console.log('path', response.uri)
-                setPhotoLocalPath(response.uri);
-                let nProfile = {...profile};
-                nProfile.img = response.uri;
-                setProfile(nProfile);
-            }
-        });
+        try{
+            const response = await ImagePicker.openPicker(options);
+            // console.log('path', response.uri)
+            setPhotoLocalPath(response.path);
+            let nProfile = {...profile};
+            nProfile.img = response.path;
+            setProfile(nProfile);
+        } catch (e) {
+            console.log('pick error', e)
+        }
     };
 
     const takePhoto = async () => {
-        if (Platform.OS === 'ios') {
-            let isCameraPermission = await checkCameraPermission();
-            if (!isCameraPermission) {
-                Alert.alert(
-                    'Visit settings and allow camera permission',
-                    '',
-                    [
-                        {
-                            text: "OK", onPress: () => {
-                                Linking.openURL('app-settings:');
-                            }
-                        },
-                        {
-                            text: "CANCEL", onPress: () => {
-                            }
+        let isCameraPermission = await checkCameraPermission();
+        if (!isCameraPermission) {
+            Alert.alert(
+                'Visit settings and allow camera permission',
+                '',
+                [
+                    {
+                        text: "OK", onPress: () => {
+                            Linking.openURL('app-settings:');
                         }
-                    ]);
-                return;
-            }
+                    },
+                    {
+                        text: "CANCEL", onPress: () => {
+                        }
+                    }
+                ]);
+            return;
         }
 
+
         let options = {
-            mediaType: 'photo'
+            cropping: false,
+            compressImageQuality: 0.8,
+            enableRotationGesture: true,
+            avoidEmptySpaceAroundImage: false,
         };
-        launchCamera(options, response => {
-            if (response.didCancel) {
-            } else if (response.error) {
-                console.log('pick error', response.error)
-            } else {
+        try{
+            const response = await ImagePicker.openCamera(options);
                 // console.log('path', response.uri)
-                setPhotoLocalPath(response.uri);
+                setPhotoLocalPath(response.path);
                 let nProfile = {...profile};
-                nProfile.img = response.uri;
+                nProfile.img = response.path;
                 setProfile(nProfile);
-            }
-        });
+        } catch (e) {
+            console.log('pick error', e)
+        }
     }
 
     const uploadPhoto = () => {
