@@ -225,6 +225,15 @@ task copyDownloadableDepsToLibs(type: Copy) {
     into 'libs'
 }
 
+//Fix for bundle not getting included in APK or AAB with android gradle plugin 4+
+//Seems like there's a task ordering issue and the assets get computed before the bundle is copied
+//This forces the copy task to run before merge resources
+project.afterEvaluate {
+    tasks.findAll { task ->
+        task.name.startsWith('merge') && task.name.endsWith('Resources')
+    }.each { t -> t.dependsOn "copyReleaseBundledJs" }
+}
+
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 apply plugin: 'com.android.application'
