@@ -132,11 +132,12 @@ export default function SigninScreen({ navigation }) {
     }
 
     await createUser(user)
-      .then(async () => {
+      .then(() => {
         console.log('create user success');
         Constants.user = user;
         AsyncStorage.setItem('user', JSON.stringify(user));
-        await setFcmToken(Constants.user.id);
+        setFcmToken(Constants.user.id);
+        setSpinner(false)
         navigation.navigate("Home", { screen: 'BusinessList' });
       })
       .catch((err) => {
@@ -174,7 +175,7 @@ export default function SigninScreen({ navigation }) {
           }
 
         await signin(email, pwd)
-          .then(async (user) => {
+          .then((user) => {
             console.log('signin success', user);
 
             if (!user.active) {
@@ -188,9 +189,9 @@ export default function SigninScreen({ navigation }) {
               return;
             }
 
-            setSpinner(false);
             Constants.user = user;
-            await setFcmToken(Constants.user.id);
+            setFcmToken(Constants.user.id);
+            setSpinner(false);
             AsyncStorage.setItem('user', JSON.stringify(user));
             navigation.navigate('Home', { screen: 'BusinessList' });
           })

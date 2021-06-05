@@ -177,12 +177,12 @@ export default function SplashScreen({ navigation }) {
 
   const goScreen = () => {
     AsyncStorage.getItem('user')
-      .then(async (user) => {
+      .then((user) => {
         // console.log('user', user)
         if (user) {
           Constants.user = JSON.parse(user);
+          setFcmToken(Constants.user.id);
           setSpinner(false);
-          await setFcmToken(Constants.user.id);
           navigation.navigate("Home", { screen: 'BusinessList' });
           if(Constants.notification){
             const { uid, action, chateeId } = Constants.notification;

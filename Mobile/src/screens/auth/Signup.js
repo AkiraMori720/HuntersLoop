@@ -184,11 +184,11 @@ export default function SignupScreen({ navigation }) {
               'Account created!',
               [
                 {
-                  text: "OK", onPress: async () => {
-                    setSpinner(false);
+                  text: "OK", onPress: () => {
                     Constants.user = user;
                     AsyncStorage.setItem('user', JSON.stringify(user));
-                    await setFcmToken(Constants.user.id);
+                    setFcmToken(Constants.user.id);
+                    setSpinner(false);
                     navigation.navigate("Home", { screen: 'BusinessList' });
                   }
                 }
