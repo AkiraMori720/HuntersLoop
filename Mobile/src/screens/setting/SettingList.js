@@ -168,7 +168,7 @@ export default function SettingListScreen({ navigation }) {
       </View>
 
       {
-        (Constants.user && Constants.user.role != "business") &&
+        (Constants.user && Constants.user.role != "business") && Constants.user.bid &&
         <View style={styles.itemLine}>
           <View style={styles.iconPart}><EntypoIcon name="users" style={styles.iconLabel}></EntypoIcon></View>
           <TouchableOpacity style={styles.titlePart} onPress={() => { switchAccount('business') }}><Text style={styles.itemTxt}>Switch to Business Account</Text></TouchableOpacity>

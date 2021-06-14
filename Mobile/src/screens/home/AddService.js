@@ -31,11 +31,11 @@ import { Colors, Constants } from '@constants';
 import { setData, uploadMedia } from '../../service/firebase';
 
 import CheckBox from '@react-native-community/checkbox';
-import RNDateTimePicker from '@react-native-community/datetimepicker';
 import {check, PERMISSIONS, RESULTS} from "react-native-permissions";
 import moment from "moment";
 import DropDownPicker from "react-native-dropdown-picker";
 import DatePicker from "../../components/DatePicker";
+import InputComponent from "../../components/InputComponent";
 
 export default function AddService({ navigation, route }) {
     const [service, setService] = useState({season:{}, detailImgs:[]});
@@ -382,14 +382,13 @@ export default function AddService({ navigation, route }) {
                     />
                 </View>
                 }
-                <TextInput
+                <InputComponent
                     style={styles.inputBox}
                     autoCapitalize='none'
-                    placeholder={'Hunt Title*'}
-                    placeholderTextColor={Colors.riskColor}
+                    placeholder={'Hunt Title'}
                     value={service.name}
                     onChangeText={(text) => updateServiceProperty('name', text)}
-                ></TextInput>
+                    />
                 <TextInput
                     style={styles.inputBox}
                     autoCapitalize='none'
@@ -420,24 +419,22 @@ export default function AddService({ navigation, route }) {
                     numberOfLines={5}
                     textAlignVertical='top'
                 ></TextInput>
-                <TextInput
+                <InputComponent
                     style={styles.inputBox}
                     autoCapitalize='none'
-                    placeholder={'Hunt Duration (day/s)*'}
-                    placeholderTextColor={Colors.riskColor}
+                    placeholder={'Hunt Duration (day/s)'}
                     value={service.days}
                     onChangeText={(text) => updateServiceProperty('days', text)}
                     keyboardType='number-pad'
-                ></TextInput>
-                <TextInput
+                />
+                <InputComponent
                     style={styles.inputBox}
                     autoCapitalize='none'
-                    placeholder={'Hunt per package*'}
-                    placeholderTextColor={Colors.riskColor}
+                    placeholder={'Hunt per package'}
                     value={service.hunters}
                     onChangeText={(text) => updateServiceProperty('hunters', text)}
                     keyboardType='number-pad'
-                ></TextInput>
+                />
                 <TextInput
                     style={styles.inputBox}
                     autoCapitalize='none'

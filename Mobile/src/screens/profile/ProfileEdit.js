@@ -326,8 +326,9 @@ export default function ProfileEditScreen({navigation, route}) {
                                 },
                             }}
                             placeholder=''
-                            isRowScrollable={true}
                             enablePoweredByContainer={false}
+                            //renderRow={(row) => <Text numberOfLines={4}>{row.description}</Text> }
+                            renderRow={(row) => <Text numberOfLines={4} style={{width: normalize(210, width) }}>{row.description}</Text>}
                             fetchDetails={true}
                             onPress={(data, details = null) => {
                                 console.log('location', data, details);

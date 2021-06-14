@@ -49,6 +49,7 @@ export default function MessageListScreen({ navigation, route }) {
         if (Constants.user && userIds[0] === Constants.user.id) {
           let unread = (Object.values(roomMessages).filter(m => !lastVisited[Constants.user.id] || m.createdAt > lastVisited[Constants.user.id])).length;
           roomChats.push({
+            id: room,
             chateeId: userIds[1],
             lastVisited,
             unread,
@@ -58,6 +59,7 @@ export default function MessageListScreen({ navigation, route }) {
         else if (Constants.user && userIds[1] === Constants.user.id) {
           let unread = (Object.values(roomMessages).filter(m => !lastVisited[Constants.user.id] || m.createdAt > lastVisited[Constants.user.id])).length;
           roomChats.push({
+            id: room,
             chateeId: userIds[0],
             lastVisited,
             unread,
@@ -67,7 +69,7 @@ export default function MessageListScreen({ navigation, route }) {
       }
 
       roomChats = roomChats.sort((a, b) => a.lastChat.createdAt < b.lastChat.createdAt);
-
+    console.log('rooms', roomChats);
       setRoomChats(roomChats);      
     })
   }
@@ -77,9 +79,12 @@ export default function MessageListScreen({ navigation, route }) {
     return s;
   }
 
-  const onDeleteItem = (item) => {
+  const onDeleteItem = ({item}) => {
+    const chatRef = firebase.database().ref('chat/' + item.id);
+    chatRef.remove();
+
     var data = [...roomChats];
-    data.splice(data.findIndex(each => each.chateeId == item.chateeId), 1);
+    data.splice(data.findIndex(each => each.chateeId === item.chateeId), 1);
     setRoomChats(data);
   }
 

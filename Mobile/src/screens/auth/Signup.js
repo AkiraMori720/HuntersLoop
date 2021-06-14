@@ -38,9 +38,9 @@ export default function SignupScreen({ navigation }) {
   })
   const [spinner, setSpinner] = useState(false);
 
-  const validateEmail = () => {
+  const validateEmail = (text) => {
     const reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return reg.test(email);
+    return reg.test(text);
   }
 
   const onChangeEmail = (text) => {
@@ -50,7 +50,8 @@ export default function SignupScreen({ navigation }) {
       return;
     }
 
-    if (validateEmail()) {
+    console.log('email', text);
+    if (validateEmail(text)) {
       setEmailValid(true);
     }
     else {
@@ -61,63 +62,33 @@ export default function SignupScreen({ navigation }) {
   const onChangePwd = (text) => {
     setPwd(text);
 
-    var pwdChkObj = {
+    let pwdChkObj = {
       sixCharacters: false,
       letter: false,
       number: false,
       specialCharacter: false
     };
+
+    if (text.length >= 6) {
+      pwdChkObj.sixCharacters = true;
+    } else if (text.length < 6) {
+      pwdChkObj.sixCharacters = false;
+    }
+
+    let letterReg = /[a-zA-Z]+/;
+    let numberReg = /[0-9]+/;
+    let specialReg = /[ !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+
+    if (letterReg.test(text)) {
+      pwdChkObj.letter = true;
+    }
+    if (numberReg.test(text)) {
+      pwdChkObj.number = true;
+    }
+    if (specialReg.test(text)) {
+      pwdChkObj.specialCharacter = true;
+    }
     setPwdValidObj(pwdChkObj);
-
-    if (text.length >= 6 && !pwdValidObj.sixCharacters) {
-      var pwdChkObj = { ...pwdValidObj, sixCharacters: true };
-      setPwdValidObj(pwdChkObj);
-      return;
-    }
-    else if (text.length < 6 && pwdValidObj.sixCharacters) {
-      var pwdChkObj = { ...pwdValidObj, sixCharacters: false };
-      setPwdValidObj(pwdChkObj);
-      return;
-    }
-
-    let letterReg = /^[a-zA-Z]+$/;
-    let numberReg = /^[0-9]+$/;
-    let specialReg = /[ !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g;
-    let letterNumberReg = /^[a-zA-Z0-9]+$/;
-    let letterSpecialReg = /[a-zA-Z !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g;
-    let numberSpecialReg = /[0-9 !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g;
-    let allReg = /[a-zA-z0-9 !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g;
-
-    if (letterReg.test(text) && !numberReg.test(text) && !specialReg.test(text) && !numberSpecialReg.test(text)) {
-      var pwdChkObj = { ...pwdValidObj, letter: true };
-      setPwdValidObj(pwdChkObj);
-    }
-    if (!letterReg.test(text) && numberReg.test(text) && !specialReg.test(text) && !letterSpecialReg.test(text)) {
-      var pwdChkObj = { ...pwdValidObj, number: true };
-      setPwdValidObj(pwdChkObj);
-    }
-    if (!letterReg.test(text) && !numberReg.test(text) && specialReg.test(text) && !letterNumberReg.test(text)) {
-      var pwdChkObj = { ...pwdValidObj, specialCharacter: true };
-      setPwdValidObj(pwdChkObj);
-    }
-    if (letterNumberReg.test(text) && !letterReg.test(text) && !numberReg.test(text)) {
-      var pwdChkObj = { ...pwdValidObj, letter: true, number: true };
-      setPwdValidObj(pwdChkObj);
-    }
-    // if (letterSpecialReg.test(text) && !letterReg.test(text) && !specialReg.test(text)) {
-    //   var pwdChkObj = { ...pwdValidObj, letter: true, specialCharacter: true };
-    //   setPwdValidObj(pwdChkObj);
-    // }
-    // if (numberSpecialReg.test(text) && !numberReg.test(text) && !specialReg.test(text)) {
-    //   var pwdChkObj = { ...pwdValidObj, number: true, specialCharacter: true };
-    //   setPwdValidObj(pwdChkObj);
-    // }
-    // if (!letterReg.test(text) && !numberReg.test(text) && !specialReg.test(text) && !letterNumberReg.test(text) && !letterSpecialReg.test(text) && !numberSpecialReg.test(text) && allReg.test(text)) {
-    //   var pwdChkObj = { ...pwdValidObj, letter: true, number: true, specialCharacter: true };
-    //   setPwdValidObj(pwdChkObj);
-    // }
-
-
   }
 
   const onSignup = async () => {
@@ -181,6 +152,7 @@ export default function SignupScreen({ navigation }) {
           .then(() => {
             console.log('create user success');
             Alert.alert(
+                '',
               'Account created!',
               [
                 {
@@ -204,7 +176,7 @@ export default function SignupScreen({ navigation }) {
         console.log('signup error', err);
         if (err.code === 'auth/email-already-in-use') {
           Alert.alert(
-            'Email address is already in use!',
+            'Email address is already registered!',
             '',
             [
               { text: "OK", onPress: () => setSpinner(false) }
