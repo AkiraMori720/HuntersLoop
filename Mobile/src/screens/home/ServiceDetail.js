@@ -287,15 +287,21 @@ export default function ServiceDetailScreen({ navigation, route }) {
         <Image style={styles.topImg} source={serviceItem.img ? { uri: serviceItem.img } : Images.noImg} resizeMode='cover' />
       </View>
 
-      <ScrollView style={styles.detailImgContainer} horizontal={true} >
         {
-          detailImgs.map((each, index) =>
-            <TouchableOpacity key={index} onPress={() => toggleDetailImgView(index)} style={styles.detailImg}>
-              <Image style={{ width: '100%', height: '100%', resizeMode:'cover' }} source={{ uri: each.source.uri }} />
-            </TouchableOpacity>
-          )
+          detailImgs.length === 0 ?
+              <View style={[styles.detailImgContainer, styles.noPhotos]}><Text>No photos added</Text></View>
+              :
+              <ScrollView style={styles.detailImgContainer} horizontal={true} >
+                {
+                  detailImgs.map((each, index) =>
+                      <TouchableOpacity key={index} onPress={() => toggleDetailImgView(index)} style={styles.detailImg}>
+                        <Image style={{ width: '100%', height: '100%', resizeMode:'cover' }} source={{ uri: each.source.uri }} />
+                      </TouchableOpacity>
+                  )
+                }
+              </ScrollView>
         }
-      </ScrollView>
+
       <View>
         <Animated.View
           style={{
@@ -475,7 +481,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 100,
     flexDirection: 'row',
+    position: 'relative',
     // justifyContent: 'space-around',
+  },
+  noPhotos: {
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   detailImg: {
     width: 100,
