@@ -97,7 +97,7 @@ function BusinessProfileStack(){
 function HomeStack(){
   return (
     <Stack.Navigator
-      headerMode='none'            
+      headerMode='none'
     >
       <Stack.Screen
         name='MapView'

@@ -29,7 +29,6 @@ import {Collapse, CollapseBody, CollapseHeader} from 'accordion-collapse-react-n
 EntypoIcon.loadFont();
 
 export default class BusinessListScreen extends React.Component {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -57,6 +56,9 @@ export default class BusinessListScreen extends React.Component {
             }
             this.setState({isBusiness});
         });
+        this.unSubscribeSwipe = navigation.addListener('beforeRemove', (e) => {
+            e.preventDefault();
+        })
         this.unSubscribeBlur = navigation.addListener('blur', () => {
             if(this.backHandler && this.backHandler.remove){
                 this.backHandler.remove();
@@ -108,6 +110,9 @@ export default class BusinessListScreen extends React.Component {
     componentWillUnmount(){
         if(this.unSubscribeFocus){
             this.unSubscribeFocus();
+        }
+        if(this.unSubscribeSwipe){
+            this.unSubscribeSwipe();
         }
         if(this.unSubscribeBlur){
             this.unSubscribeBlur();

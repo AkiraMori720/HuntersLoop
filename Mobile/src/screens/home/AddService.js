@@ -118,6 +118,24 @@ export default function AddService({ navigation, route }) {
 
 
     const pickImage = async (index = null) => {
+        let isCameraPermission = await checkPhotosPermission();
+        if (!isCameraPermission) {
+            Alert.alert(
+                'Visit settings and allow photos permission',
+                '',
+                [
+                    {
+                        text: "OK", onPress: () => {
+                            Linking.openURL('app-settings:');
+                        }
+                    },
+                    {
+                        text: "CANCEL", onPress: () => {
+                        }
+                    }
+                ]);
+            return;
+        }
         let options = {
             cropping: false,
             compressImageQuality: 0.8,
@@ -147,6 +165,19 @@ export default function AddService({ navigation, route }) {
     const checkCameraPermission = () => {
         return new Promise((resolve, reject) => {
             check(Platform.OS === 'ios'?PERMISSIONS.IOS.CAMERA:PERMISSIONS.ANDROID.CAMERA)
+                .then((result) => {
+                    if (result == RESULTS.GRANTED) resolve(true);
+                    else resolve(false);
+                })
+                .catch((error) => {
+                    resolve(false);
+                })
+        })
+    }
+
+    const checkPhotosPermission = () => {
+        return new Promise((resolve, reject) => {
+            check(Platform.OS === 'ios'?PERMISSIONS.IOS.PHOTO_LIBRARY:PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
                 .then((result) => {
                     if (result == RESULTS.GRANTED) resolve(true);
                     else resolve(false);

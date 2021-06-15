@@ -114,6 +114,19 @@ export default function BusinessProfileEdit({ navigation, route }) {
         })
     }
 
+    const checkPhotosPermission = () => {
+        return new Promise((resolve, reject) => {
+            check(Platform.OS === 'ios'?PERMISSIONS.IOS.PHOTO_LIBRARY:PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
+                .then((result) => {
+                    if (result == RESULTS.GRANTED) resolve(true);
+                    else resolve(false);
+                })
+                .catch((error) => {
+                    resolve(false);
+                })
+        })
+    }
+
     const takePhoto = async (index = null) => {
         let isCameraPermission = await checkCameraPermission();
         if (!isCameraPermission) {
@@ -161,6 +174,24 @@ export default function BusinessProfileEdit({ navigation, route }) {
     }
 
     const pickImage = async (index = null) => {
+        let isCameraPermission = await checkPhotosPermission();
+        if (!isCameraPermission) {
+            Alert.alert(
+                'Visit settings and allow photos permission',
+                '',
+                [
+                    {
+                        text: "OK", onPress: () => {
+                            Linking.openURL('app-settings:');
+                        }
+                    },
+                    {
+                        text: "CANCEL", onPress: () => {
+                        }
+                    }
+                ]);
+            return;
+        }
         let options = {
             cropping: false,
             compressImageQuality: 0.8,

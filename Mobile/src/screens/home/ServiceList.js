@@ -227,17 +227,18 @@ console.log('services', services, route.params.businessItem.id);
         </LinearGradient>
       </View>
 
-      <ScrollView style={styles.listBody}>
+      <ScrollView style={styles.listBody} scrollIndicatorInsets={{right:1}}>
         {
-          services.map((each, index) =>
-            <ServiceItem key={index} item={each} onPress={onServiceItem} onRefresh={onRefresh} showAlert={showAlert} />
-          )
-        }
-        {
-          services.length == 0 &&
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTxt}>No Services</Text>
-          </View>
+          services.length == 0 ?
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTxt}>No Services</Text>
+            </View>
+              :
+            <View style={{ width: '100%' }}>
+              {services.map((each, index) =>
+              <ServiceItem key={index} item={each} onPress={onServiceItem} onRefresh={onRefresh} showAlert={showAlert} />
+              )}
+            </View>
         }
       </ScrollView>
 

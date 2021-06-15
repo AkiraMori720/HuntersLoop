@@ -87,7 +87,7 @@ export default function ServiceItem({ item, onPress, onRefresh, showAlert }) {
         <View style={styles.priceLine}>
           {
             item.isContactPrice ?
-              <Text style={styles.daysHuntersTxt}>Contact guide for package price</Text>
+              <Text style={styles.daysHuntersTxt} numberOfLines={2}>Contact guide for package price</Text>
               :
               <Text style={styles.priceTxt}>
                 {
@@ -179,7 +179,6 @@ const styles = StyleSheet.create({
   },
 
   priceLine: {
-    height: normalize(35, 'height'),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -193,7 +192,8 @@ const styles = StyleSheet.create({
   daysHuntersTxt: {
     fontSize: RFPercentage(2),
     fontWeight: "600",
-    color: Colors.blackColor
+    color: Colors.blackColor,
+    maxWidth: normalize(200, 'width'),
   },
 
   descLine: {
