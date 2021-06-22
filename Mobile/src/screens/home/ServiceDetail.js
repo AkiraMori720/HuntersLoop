@@ -29,6 +29,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import { Colors, Images, Constants } from '@constants';
 import ReviewModal from '../../components/ReviewModal';
 import { setData } from '../../service/firebase';
+import MoreLessText from "../../components/MoreLessText";
 
 export default function ServiceDetailScreen({ navigation, route }) {
   const serviceItem = route.params.serviceItem;
@@ -356,21 +357,25 @@ export default function ServiceDetailScreen({ navigation, route }) {
           <>
             <View style={styles.aboutPart}>
               <Text style={styles.labelTxt}>About the Hunt:</Text>
-              <ReadMore
-                numberOfLines={3}
-                renderTruncatedFooter={(handlePress) => (
-                  <Text style={{ color: Colors.readMoreLessColor, marginTop: 5, marginRight: 5, textAlign: 'right', textDecorationLine: 'underline', fontStyle: 'italic' }} onPress={handlePress}>
-                    Read more
-                  </Text>
-                )}
-                renderRevealedFooter={(handlePress) => (
-                  <Text style={{ color: Colors.readMoreLessColor, marginTop: 5, marginRight: 5, textAlign: 'right', textDecorationLine: 'underline', fontStyle: 'italic' }} onPress={handlePress}>
-                    Show less
-                  </Text>
-                )}
-              >
-                <Text style={styles.valueTxt}>{serviceItem.about}</Text>
-              </ReadMore>
+              {/*<ReadMore*/}
+              {/*  numberOfLines={3}*/}
+              {/*  renderTruncatedFooter={(handlePress) => (*/}
+              {/*    <Text style={{ color: Colors.readMoreLessColor, marginTop: 5, marginRight: 5, textAlign: 'right', textDecorationLine: 'underline', fontStyle: 'italic' }} onPress={handlePress}>*/}
+              {/*      Read more*/}
+              {/*    </Text>*/}
+              {/*  )}*/}
+              {/*  renderRevealedFooter={(handlePress) => (*/}
+              {/*    <Text style={{ color: Colors.readMoreLessColor, marginTop: 5, marginRight: 5, textAlign: 'right', textDecorationLine: 'underline', fontStyle: 'italic' }} onPress={handlePress}>*/}
+              {/*      Show less*/}
+              {/*    </Text>*/}
+              {/*  )}*/}
+              {/*>*/}
+              {/*  <Text style={styles.valueTxt}>{serviceItem.about}</Text>*/}
+              {/*</ReadMore>*/}
+              <MoreLessText
+                  linesToTruncate={3}
+                  text={serviceItem.about}
+              />
             </View>
             <View style={styles.accordionPart}>
               <Accordion
