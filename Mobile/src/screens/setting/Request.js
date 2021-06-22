@@ -482,7 +482,7 @@ export default function RequestScreen({ navigation }) {
         <GooglePlacesAutocomplete
           ref={refAddress}
           debounce={300}
-          textInputProps={styles.inputBox}
+          textInputProps={{style: styles.inputBox, placeholderTextColor: Colors.greyColor}}
           placeholder='Address'
           enablePoweredByContainer={false}
           fetchDetails={true}

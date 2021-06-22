@@ -65,7 +65,7 @@ export default function DatePicker({ placeholder, style, type, value, action, mi
 	if(Platform.OS === 'ios'){
 		return (
 			<DateTimePicker
-				style={style}
+				style={{width: 90}}
 				mode={type}
 				is24Hour={true}
 				display='default'

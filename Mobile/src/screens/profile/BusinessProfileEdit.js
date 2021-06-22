@@ -38,13 +38,13 @@ export default function BusinessProfileEdit({ navigation, route }) {
     const [logoImagePath, setLogoImagePath] = useState();
     const [iconImagePath, setIconImagePath] = useState();
     const [imagesPath, setImagesPath] = useState([]);
-    
+
 
     useEffect(() => {
         if (Constants.user && Constants.user.role == 'business') {
             const myBusiness = {...Constants.business.find(one => one.id == Constants.user.bid)};
             setBusiness(myBusiness);
-            
+
             if (myBusiness.operatingHours.from) {
                 const from = myBusiness.operatingHours.from;
                 var hours = from.split(':')[0] * 1;
@@ -289,7 +289,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
             Alert.alert(err.message);
         }
     }
-    
+
 
     return (
         <KeyboardAvoidingView style={styles.container}  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -309,7 +309,7 @@ export default function BusinessProfileEdit({ navigation, route }) {
             </View>
 
             <View style={styles.body}>
-                <ScrollView keyboardShouldPersistTaps='always' style={{alignSelf: 'center', flexGrow: 1}}>
+                <ScrollView keyboardShouldPersistTaps='always' style={{ paddingHorizontal: 8, flexGrow: 1}}>
                     <Text style={styles.logoTxt}>Company Logo</Text>
                     <View style={styles.logo}>
                         <TouchableOpacity style={styles.logoBtn} onPress={() => onUpdateImage('logo')}>
@@ -565,6 +565,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.greyWeakColor,
         marginTop: normalize(10, 'height'),
         borderRadius: normalize(8),
+        alignSelf: 'center'
     },
     logoImg: {
         width: '100%',
