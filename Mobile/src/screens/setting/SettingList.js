@@ -36,7 +36,7 @@ export default function SettingListScreen({ navigation }) {
   }
 
   function onRateNow() {
-    //to do    
+    //to do
     toggleModal();
   }
 
@@ -81,11 +81,17 @@ export default function SettingListScreen({ navigation }) {
       [
         {
           text: "OK", onPress: async () => {
-            const user = Constants.user;
-            user.role = role;
+            const user = {
+              id: Constants.user.id,
+              role
+            };
             await setData('users', 'update', user)
             .then(() => {
-              Constants.user = user;
+              Constants.user = {
+                ...Constants.user,
+                role
+              };
+              AsyncStorage.setItem('user', JSON.stringify( Constants.user));
               setRefresh(!refresh);
             })
             .catch((err) => {
@@ -99,7 +105,7 @@ export default function SettingListScreen({ navigation }) {
   }
 
   useEffect(() => {
-    
+
   });
 
   return (
@@ -168,7 +174,7 @@ export default function SettingListScreen({ navigation }) {
       </View>
 
       {
-        (Constants.user && Constants.user.role != "business") && Constants.user.bid &&
+        (Constants.user && Constants.user.role == "user") && Constants.user.bid &&
         <View style={styles.itemLine}>
           <View style={styles.iconPart}><EntypoIcon name="users" style={styles.iconLabel}></EntypoIcon></View>
           <TouchableOpacity style={styles.titlePart} onPress={() => { switchAccount('business') }}><Text style={styles.itemTxt}>Switch to Business Account</Text></TouchableOpacity>
@@ -176,7 +182,7 @@ export default function SettingListScreen({ navigation }) {
         </View>
       }
       {
-        (Constants.user && Constants.user.role != "user") &&
+        (Constants.user && Constants.user.role == "business") &&
         <View style={styles.itemLine}>
           <View style={styles.iconPart}><EntypoIcon name="users" style={styles.iconLabel}></EntypoIcon></View>
           <TouchableOpacity style={styles.titlePart} onPress={() => { switchAccount('user') }}><Text style={styles.itemTxt}>Switch to User Account</Text></TouchableOpacity>
@@ -185,7 +191,7 @@ export default function SettingListScreen({ navigation }) {
       }
 
       {
-        Constants.user && Constants.user.role != "business" &&
+        Constants.user && Constants.user.role == "user" &&
         <View style={styles.itemLine}>
           <View style={styles.iconPart}><EntypoIcon name="suitcase" style={styles.iconLabel}></EntypoIcon></View>
           <TouchableOpacity style={styles.titlePart} onPress={() => { Constants.refreshFlag = true; navigation.navigate('Request') }}><Text style={styles.itemTxt}>{Constants.user?.bid?'Update a Business Account':'Create a Business Account'}</Text></TouchableOpacity>

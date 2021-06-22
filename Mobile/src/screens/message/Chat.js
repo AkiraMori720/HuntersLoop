@@ -23,7 +23,7 @@ import KeyboardManager from 'react-native-keyboard-manager'
 import firebase from '@react-native-firebase/app';
 
 import {
-  GiftedChat,  
+  GiftedChat,
   Time,
   Composer
 } from "react-native-gifted-chat";
@@ -77,7 +77,6 @@ export default function ChatScreen({ navigation, route }) {
   const onOnline = () => {
     const statusRef = firebase.database().ref('chat/' + chatID + '/status/' + user.id);
     statusRef.set('online');
-    statusRef.onDisconnect().set('offline').then(() => {});
   }
 
   const onOffline = () => {
@@ -93,7 +92,7 @@ export default function ChatScreen({ navigation, route }) {
       const chatsObj = snapshot.val();
       let chats = [];
       for (let key in chatsObj) {
-        chats.push(chatsObj[key]);        
+        chats.push(chatsObj[key]);
       }
       chats.sort(function(a, b){return b.createdAt - a.createdAt});
       setChats(chats);
@@ -116,10 +115,10 @@ export default function ChatScreen({ navigation, route }) {
         return;
       }
 
-      const chat = {        
+      const chat = {
         _id: message._id,
         text: message.text,
-        user: { 
+        user: {
           _id: user.id,
           avatar: user.img
         },
@@ -176,16 +175,16 @@ export default function ChatScreen({ navigation, route }) {
       <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : null} style={styles.giftedChat} keyboardVerticalOffset={30}>
         <GiftedChat
           messages={chats}
-          textInputProps={{}}          
+          textInputProps={{}}
           onSend={messages => onSendMessage(messages)}
           user={{ _id: user.id }}
           isAnimated
           showAvatarForEveryMessage
-          renderAvatarOnTop={true}          
+          renderAvatarOnTop={true}
           alwaysShowSend={true}
-          renderLoading={() => (<ActivityIndicator size="large" color="#0000ff" />)}          
-          renderTime={timeProps => renderTime(timeProps)}          
-          renderComposer={renderComposer}      
+          renderLoading={() => (<ActivityIndicator size="large" color="#0000ff" />)}
+          renderTime={timeProps => renderTime(timeProps)}
+          renderComposer={renderComposer}
         />
       </KeyboardAvoidingView>
 
@@ -230,7 +229,7 @@ const styles = StyleSheet.create({
   giftedChat: {
     width: '100%',
     height: '86%',
-    backgroundColor: Colors.whiteColor,    
+    backgroundColor: Colors.whiteColor,
   },
 
 });
@@ -251,7 +250,7 @@ const styles = StyleSheet.create({
 //       messages: [
 //         {
 //           _id: 1,
-//           text: 'Hello developer',  
+//           text: 'Hello developer',
 //           createdAt: new Date(Date.UTC(2016, 7, 30, 17, 20, 0)),
 //           user: {
 //             _id: 2,
@@ -286,7 +285,7 @@ const styles = StyleSheet.create({
 //           multiline: false,
 //           onSubmitEditing: event => {
 //             props.onSend({ text: event.nativeEvent.text.trim() }, true);
-//           },          
+//           },
 //         }}
 //       />
 //     );
@@ -302,11 +301,11 @@ const styles = StyleSheet.create({
 //             _id: 1,
 //           }}
 //           renderInputToolbar={this.renderInputToolbar}
-//           renderComposer={this.renderComposer}          
-          
-          
+//           renderComposer={this.renderComposer}
+
+
 //         />
-        
+
 //       </ScrollView>
 
 //     );

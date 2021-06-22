@@ -47,7 +47,7 @@ export default function MessageListScreen({ navigation, route }) {
         let roomLastChat = keyArr.length?roomMessages[keyArr[0]]:{};
 
         if (Constants.user && userIds[0] === Constants.user.id) {
-          let unread = (Object.values(roomMessages).filter(m => !lastVisited[Constants.user.id] || m.createdAt > lastVisited[Constants.user.id])).length;
+          let unread = (Object.values(roomMessages).filter(m => m.user._id !== Constants.user.id && (!lastVisited[Constants.user.id] || m.createdAt > lastVisited[Constants.user.id]))).length;
           roomChats.push({
             id: room,
             chateeId: userIds[1],
@@ -57,7 +57,7 @@ export default function MessageListScreen({ navigation, route }) {
           });
         }
         else if (Constants.user && userIds[1] === Constants.user.id) {
-          let unread = (Object.values(roomMessages).filter(m => !lastVisited[Constants.user.id] || m.createdAt > lastVisited[Constants.user.id])).length;
+          let unread = (Object.values(roomMessages).filter(m =>  m.user._id !== Constants.user.id && (!lastVisited[Constants.user.id] || m.createdAt > lastVisited[Constants.user.id]))).length;
           roomChats.push({
             id: room,
             chateeId: userIds[0],
@@ -70,7 +70,7 @@ export default function MessageListScreen({ navigation, route }) {
 
       roomChats = roomChats.sort((a, b) => a.lastChat.createdAt < b.lastChat.createdAt);
     console.log('rooms', roomChats);
-      setRoomChats(roomChats);      
+      setRoomChats(roomChats);
     })
   }
 
@@ -81,11 +81,12 @@ export default function MessageListScreen({ navigation, route }) {
 
   const onDeleteItem = ({item}) => {
     const chatRef = firebase.database().ref('chat/' + item.id);
-    chatRef.remove();
+    chatRef.remove(() => {
+      let data = [...roomChats];
+      data.splice(data.findIndex(each => each.chateeId === item.chateeId), 1);
+      setRoomChats(data);
+    });
 
-    var data = [...roomChats];
-    data.splice(data.findIndex(each => each.chateeId === item.chateeId), 1);
-    setRoomChats(data);
   }
 
   return (
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: normalize(230, 'height'),    
+    marginTop: normalize(230, 'height'),
   },
   emptyTxt: {
     fontSize: RFPercentage(2.2),
