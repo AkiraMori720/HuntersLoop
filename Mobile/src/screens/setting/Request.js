@@ -44,6 +44,7 @@ import ImagePicker from "react-native-image-crop-picker";
 import {check, PERMISSIONS, RESULTS} from "react-native-permissions";
 import RNPickerSelect from "react-native-picker-select";
 import DropDownPicker from "react-native-dropdown-picker";
+import AsyncStorage from "@react-native-community/async-storage";
 
 let purchaseUpdateSubscription = null
 let purchaseErrorSubscription = null
@@ -281,8 +282,12 @@ export default function RequestScreen({ navigation }) {
           nBusiness.id = res.id;
           Constants.business.push(nBusiness);
 
-          Constants.user.role = 'business';//temp, later admin has to do
-          Constants.user.bid = res.id;//temp, later admin has to do
+          Constants.user = {
+            ...Constants.user,
+            role: 'business',
+            bid: res.id
+          }
+          AsyncStorage.setItem('user', JSON.stringify( Constants.user));
 
           remoteUpdateUserToBusiness();
         }
