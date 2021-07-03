@@ -64,7 +64,7 @@ class Users extends Component {
   }
 
   renderAllUsers = () => {
-    var filtered = this.state.users.filter(each => each.name.toLowerCase().includes(this.state.keyword.toLowerCase()));
+    var filtered = this.state.users.filter(each => each.name && each.name.toLowerCase().includes(this.state.keyword.toLowerCase()));
     var validUsers = filtered.filter(each => each.active && each.role != 'admin');
     return (
       <div>
@@ -94,7 +94,7 @@ class Users extends Component {
   }
 
   renderBannedUsers = () => {
-    var filtered = this.state.users.filter(each => each.name.toLowerCase().includes(this.state.keyword.toLowerCase()));
+    var filtered = this.state.users.filter(each => each.name && each.name.toLowerCase().includes(this.state.keyword.toLowerCase()));
     var bannedUsers = filtered.filter(each => each.active == false && each.role != 'admin');
     return (
       <div>
