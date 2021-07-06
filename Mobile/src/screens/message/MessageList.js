@@ -37,6 +37,9 @@ export default function MessageListScreen({ navigation, route }) {
 
       for (let room in allChatsObj) {
         let userIds = room.split("-");
+        if(userIds.length !== 2 || userIds.includes('undefined')){
+          continue;
+        }
         let roomChatsObj = allChatsObj[room];
 
         let roomMessages = roomChatsObj.messages??{};
@@ -48,23 +51,29 @@ export default function MessageListScreen({ navigation, route }) {
 
         if (Constants.user && userIds[0] === Constants.user.id) {
           let unread = (Object.values(roomMessages).filter(m => m.user._id !== Constants.user.id && (!lastVisited[Constants.user.id] || m.createdAt > lastVisited[Constants.user.id]))).length;
-          roomChats.push({
-            id: room,
-            chateeId: userIds[1],
-            lastVisited,
-            unread,
-            lastChat: roomLastChat
-          });
+          const chatee = Constants.users.find(e => e.id === userIds[1]);
+          if(chatee){
+            roomChats.push({
+              id: room,
+              chateeId: userIds[1],
+              lastVisited,
+              unread,
+              lastChat: roomLastChat
+            });
+          }
         }
         else if (Constants.user && userIds[1] === Constants.user.id) {
           let unread = (Object.values(roomMessages).filter(m =>  m.user._id !== Constants.user.id && (!lastVisited[Constants.user.id] || m.createdAt > lastVisited[Constants.user.id]))).length;
-          roomChats.push({
-            id: room,
-            chateeId: userIds[0],
-            lastVisited,
-            unread,
-            lastChat: roomLastChat
-          });
+          const chatee = Constants.users.find(e => e.id === userIds[0]);
+          if(chatee){
+            roomChats.push({
+              id: room,
+              chateeId: userIds[0],
+              lastVisited,
+              unread,
+              lastChat: roomLastChat
+            });
+          }
         }
       }
 
@@ -110,7 +119,7 @@ export default function MessageListScreen({ navigation, route }) {
             keyExtractor={(item)=>item.chateeId}
             data={roomChats}
             renderItem={({ item }, rowMap) => {
-              const chatee = Constants.users.find(e => e.id == item.chateeId);
+              const chatee = Constants.users.find(e => e.id === item.chateeId);
               return (
                 <TouchableHighlight style={styles.rowFront} underlayColor={Colors.whiteColor} onPress={() => navigation.navigate('Chat', { chateeId: item.chateeId })}>
                   <>

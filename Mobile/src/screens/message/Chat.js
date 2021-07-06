@@ -42,7 +42,16 @@ export default function ChatScreen({navigation, route}) {
 
     const [inputText, setInputText] = useState('');
     const user = Constants.user;
-    const chatee = Constants.users.find(each => each.id == route.params.chateeId);
+    const chatee = Constants.users.find(each => each.id === route.params.chateeId);
+    if(!chatee || !chatee.id){
+        Alert.alert(
+            'This account was removed!',
+            '',
+            [
+                { text: "OK", onPress: () => { navigation.pop(); } }
+            ]);
+        return null;
+    }
 
     const [chatRef, setChatRef] = useState();
     const [chats, setChats] = useState([])
