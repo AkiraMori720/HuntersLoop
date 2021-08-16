@@ -373,7 +373,7 @@ export default function ProfileEditScreen({navigation, route}) {
                                 setProfile(newProfile);
                             }}
                             query={{
-                                key: 'AIzaSyDdPAhHXaBBh2V5D2kQ3Vy7YYrDrT7UW3I',
+                                key: 'AIzaSyCOWqLpP69GBW1FqaAPr5FKdv0uTs4WDjY',
                                 language: 'en',
                                 components: 'country:us'
                             }}
